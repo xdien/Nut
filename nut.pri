@@ -10,7 +10,6 @@ HEADERS += \
     $$PWD/src/defines_p.h \
     $$PWD/src/defines.h \
     $$PWD/src/query.h \
-    $$PWD/src/tablescheema.h \
     $$PWD/src/databasemodel.h \
     $$PWD/src/sqlgeneratorbase_p.h \
     $$PWD/src/postgresqlgenerator.h \
@@ -18,14 +17,16 @@ HEADERS += \
     $$PWD/src/tablesetbase_p.h \
     $$PWD/src/querybase_p.h \
     $$PWD/src/mysqlgenerator.h \
-    $$PWD/src/sqlitegenerator.h
+    $$PWD/src/sqlitegenerator.h \
+    $$PWD/src/tablemodel.h \
+    $$PWD/src/sqlservergenerator.h \
+    $$PWD/src/wherephrase.h
 
 SOURCES += \
     $$PWD/src/database.cpp \
     $$PWD/src/table.cpp \
     $$PWD/src/tableset.cpp \
     $$PWD/src/query.cpp \
-    $$PWD/src/tablescheema.cpp \
     $$PWD/src/databasemodel.cpp \
     $$PWD/src/tablesetbase.cpp \
     $$PWD/src/sqlgeneratorbase.cpp \
@@ -33,4 +34,7 @@ SOURCES += \
     $$PWD/src/changelogtable.cpp \
     $$PWD/src/querybase.cpp \
     $$PWD/src/mysqlgenerator.cpp \
-    $$PWD/src/sqlitegenerator.cpp
+    $$PWD/src/sqlitegenerator.cpp \
+    $$PWD/src/tablemodel.cpp \
+    $$PWD/src/sqlservergenerator.cpp \
+    $$PWD/src/wherephrase.cpp

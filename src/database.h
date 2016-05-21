@@ -46,12 +46,11 @@ public:
 
     bool open();
 
-    QString decodeQuery(QString sql);
-
     QSqlQuery exec(QString sql);
 
     void add(TableSetBase *);
     void saveChanges();
+    void cleanUp();
 
     QString databaseName() const;
     QString hostName() const;

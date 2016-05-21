@@ -37,11 +37,16 @@ public:
     TableSetBase(Table *parent);
 
     virtual void save(Database *db);
+    void clearChilds();
     void add(Table* t);
     QString childClassName() const;
 
+    Database *database() const;
+    void setDatabase(Database *database);
+
 protected:
     QSet<Table*> _tables;
+    QList<Table*> _tablesList;
     QString _tableName;
     Database *_database;
     Table *_table;

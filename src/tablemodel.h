@@ -24,11 +24,11 @@
 #include <QtCore/QVariant>
 #include <QDebug>
 class QJsonObject;
-class TableScheema;
+class TableModel;
 
-struct Field{
-    Field() : name(QString::null), length(0), defaultValue(QString::null),
-        notNull(false), isPrimaryKey(false), isAutoIncrement(false)
+struct FieldModel{
+    FieldModel() : name(QString::null), length(0), defaultValue(QString::null),
+        notNull(false), isPrimaryKey(false), isAutoIncrement(false), isUnique(false)
     {
 
     }
@@ -40,8 +40,9 @@ struct Field{
     bool notNull;
     bool isPrimaryKey;
     bool isAutoIncrement;
+    bool isUnique;
 
-    bool operator ==(const Field &f) const{
+    bool operator ==(const FieldModel &f) const{
 
         bool b = name == f.name
                 && type == f.type
@@ -52,32 +53,32 @@ struct Field{
         return b;
     }
 
-    bool operator !=(const Field &f) const{
+    bool operator !=(const FieldModel &f) const{
         return !(*this == f);
     }
 };
 
-struct Relation{
+struct RelationModel{
     QString className;
     QString localColumn;
-    TableScheema *table;
+    TableModel *table;
     QString foregionColumn;
 };
-class TableScheema
+class TableModel
 {
 public:
 
-    TableScheema(int typeId, QString tableName);
-    TableScheema(QJsonObject json, QString tableName);
+    TableModel(int typeId, QString tableName);
+    TableModel(QJsonObject json, QString tableName);
 
     QJsonObject toJson() const;
 
 //    static TableScheema *registerTable(int typeId, QString tableName);
 //    static void createForegionKeys();
-//    static TableScheema* scheema(QString className);
+    static TableModel* model(QString className);
 
-    Field *field(QString name) const;
-    Relation *foregionKey(QString otherTable) const;
+    FieldModel *field(QString name) const;
+    RelationModel *foregionKey(QString otherTable) const;
 
     QString toString() const;
 
@@ -91,24 +92,24 @@ public:
 
     int typeId() const;
     void setTypeId(const int &typeId);
-    QList<Field *> fields() const;
-    QList<Relation *> foregionKeys() const;
+    QList<FieldModel *> fields() const;
+    QList<RelationModel *> foregionKeys() const;
     QStringList fieldsNames() const;
 
-    static TableScheema *findByTypeId(int typeId);
-    static TableScheema *findByName(QString name);
-    static TableScheema *findByClassName(QString className);
+    static TableModel *findByTypeId(int typeId);
+    static TableModel *findByName(QString name);
+    static TableModel *findByClassName(QString className);
 
-    bool operator ==(const TableScheema &t) const;
-    bool operator !=(const TableScheema &t) const;
+    bool operator ==(const TableModel &t) const;
+    bool operator !=(const TableModel &t) const;
 
 private:
     QString _name;
     QString _className;
     int _typeId;
-    QList<Field*> _fields;
-    QList<Relation*> _foregionKeys;
-    static QSet<TableScheema*>_allModels;
+    QList<FieldModel*> _fields;
+    QList<RelationModel*> _foregionKeys;
+    static QSet<TableModel*>_allModels;
 };
 
 #endif // TABLESCHEEMA_H

@@ -25,6 +25,7 @@ QT_BEGIN_NAMESPACE
 ChangeLogTable::ChangeLogTable()
 {
 
+
 }
 
 QT_END_NAMESPACE

@@ -47,6 +47,8 @@ public:
     void remove(T *t);
     void remove(QList<T*> t);
 
+    inline T type() const {}
+
     int length() const;
     T *at(int i) const;
     const T &operator[](int i) const;
@@ -82,19 +84,20 @@ Q_OUTOFLINE_TEMPLATE int TableSet<T>::length() const
 template<class T>
 Q_OUTOFLINE_TEMPLATE T *TableSet<T>::at(int i) const
 {
-    return (T*)_tables.values().at(i);
+    return (T*)_tablesList.at(i);
 }
 
 template<class T>
 Q_OUTOFLINE_TEMPLATE const T &TableSet<T>::operator[](int i) const
 {
-    return _tables.values()[i];
+    return _tablesList[i];
 }
 
 template<class T>
 Q_OUTOFLINE_TEMPLATE void TableSet<T>::append(T *t)
 {
     _tables.insert(t);
+    _tablesList.append(t);
 //    rows.append(t);
     t->setTableSet(this);
     if(t->status() != Table::FeatchedFromDB)

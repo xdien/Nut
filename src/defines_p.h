@@ -27,9 +27,10 @@
 #define __nut_FIELD             "field"
 
 #define __nut_DB_VERSION        "database_version"
-#define __nut_NAME_PERFIX       "nut_db_key:"
+#define __nut_NAME_PERFIX       "nut_db_key::"
 #define __nut_PRIMARY_KEY       "primary_key"
 #define __nut_AUTO_INCREMENT    "auto_increment"
+#define __nut_UNIQUE            "unique"
 #define __nut_TABLE             "table"
 #define __nut_TABLE_NAME        "table_name"
 

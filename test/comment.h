@@ -14,6 +14,7 @@ class Comment : public Table
     NUT_DECLARE_FIELD(int, id, id, setId)
     NUT_DECLARE_FIELD(QString, message, message, setMessage)
     NUT_DECLARE_FIELD(QDateTime, saveDate, saveDate, setSaveDate)
+    NUT_DECLARE_FIELD(qreal, point, point, setPoint)
 
     NUT_FOREGION_KEY(Post, int, post, post, setPost)
 

@@ -1,17 +1,36 @@
+/**************************************************************************
+**
+** This file is part of Nut project.
+** https://github.com/HamedMasafi/Nut
+**
+** Nut is free software: you can redistribute it and/or modify
+** it under the terms of the GNU Lesser General Public License as published by
+** the Free Software Foundation, either version 3 of the License, or
+** (at your option) any later version.
+**
+** Nut is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU Lesser General Public License for more details.
+**
+** You should have received a copy of the GNU Lesser General Public License
+** along with Nut.  If not, see <http://www.gnu.org/licenses/>.
+**
+**************************************************************************/
+
 #include "postgresqlgenerator.h"
 #include "table.h"
-#include "tablescheema.h"
+#include "tablemodel.h"
 
 QT_BEGIN_NAMESPACE
 
-PostgreSqlGenerator::PostgreSqlGenerator() : SqlGeneratorBase ()
+PostgreSqlGenerator::PostgreSqlGenerator(QObject *parent) : SqlGeneratorBase (parent)
 {
 
 }
 
-QString PostgreSqlGenerator::getColumnDef(Field *field)
+QString PostgreSqlGenerator::fieldType(FieldModel *field)
 {
-    QString ret = field->name + " ";
     QString dbType;
 
     switch (field->type) {
@@ -27,8 +46,8 @@ QString PostgreSqlGenerator::getColumnDef(Field *field)
     case QVariant::DateTime:
         dbType = "timestamp";
         break;
-    case QVariant::Double:
-        dbType = "real";
+    case QVariant::Time:
+        dbType = "time";
         break;
     case QVariant::Int:
         if(field->isAutoIncrement)
@@ -36,36 +55,42 @@ QString PostgreSqlGenerator::getColumnDef(Field *field)
         else
             dbType = "integer";
         break;
+    case QVariant::Double:
+        dbType = "real";
+        break;
     case QVariant::String:
         if(field->length)
             dbType = QString("varchar(%1)").arg(field->length);
         else
             dbType = "text";
         break;
-    case QVariant::Time:
-        dbType = "time";
-        break;
     default:
         dbType = "";
     }
-    ret.append(dbType);
-    return ret;
+
+    return dbType;
 }
 
-//QString PostgreSqlGenerator::saveSql(Table *t, QString tableName)
-//{
-//    switch(t->status()){
-//    case Table::Added:
-//        return insertCommand(t, tableName) + " RETURNING " + t->primaryKey();
-
-//    default:
-//        return SqlGeneratorBase::saveSql(t, tableName);
-//    }
-//}
-
-QString PostgreSqlGenerator::deleteTableRows(QString tableName, QString where)
+QString PostgreSqlGenerator::diff(FieldModel *oldField, FieldModel *newField)
 {
-    return SqlGeneratorBase::deleteTableRows(tableName, where) + " RETURNING *";
+    QString sql = "";
+    if(oldField && newField)
+        if(*oldField == *newField)
+            return QString::null;
+
+    if(!newField){
+        sql = "DROP COLUMN " + oldField->name;
+    }else{
+        if(oldField){
+            sql = "ALTER COLUMN ";
+            sql.append(newField->name + " TYPE " + fieldType(newField));
+        } else {
+            sql = "ADD COLUMN ";
+            sql.append(fieldDeclare(newField));
+        }
+    }
+    return sql;
 }
+
 
 QT_END_NAMESPACE

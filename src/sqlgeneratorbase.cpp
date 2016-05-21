@@ -1,11 +1,36 @@
+/**************************************************************************
+**
+** This file is part of Nut project.
+** https://github.com/HamedMasafi/Nut
+**
+** Nut is free software: you can redistribute it and/or modify
+** it under the terms of the GNU Lesser General Public License as published by
+** the Free Software Foundation, either version 3 of the License, or
+** (at your option) any later version.
+**
+** Nut is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU Lesser General Public License for more details.
+**
+** You should have received a copy of the GNU Lesser General Public License
+** along with Nut.  If not, see <http://www.gnu.org/licenses/>.
+**
+**************************************************************************/
+
+#include <QDate>
+#include <QDateTime>
+#include <QTime>
+#include <QVariant>
+
 #include "databasemodel.h"
 #include "sqlgeneratorbase_p.h"
 #include "table.h"
-#include "tablescheema.h"
+#include "tablemodel.h"
 
 QT_BEGIN_NAMESPACE
 
-SqlGeneratorBase::SqlGeneratorBase()
+SqlGeneratorBase::SqlGeneratorBase(QObject *parent) : QObject(parent)
 {
 
 }
@@ -15,47 +40,60 @@ SqlGeneratorBase::~SqlGeneratorBase()
 
 }
 
-QString SqlGeneratorBase::saveSql(Table *t, QString tableName)
+QString SqlGeneratorBase::masterDatabaseName(QString databaseName)
+{
+    Q_UNUSED(databaseName);
+    return "";
+}
+
+QString SqlGeneratorBase::saveRecord(Table *t, QString tableName)
 {
     switch(t->status()){
     case Table::Added:
-        return insertCommand(t, tableName);
+        return insertRecord(t, tableName);
 
     case Table::Deleted:
-        return deleteCommand(t, tableName);
+        return deleteRecord(t, tableName);
 
     case Table::Modified:
-        return updateCommand(t, tableName);
+        return updateRecord(t, tableName);
 
     case Table::NewCreated:
     case Table::FeatchedFromDB:
         // disable compiler warning
-        return "***";
+        return "";
     }
+
+    return "";
 }
 
-QStringList SqlGeneratorBase::getDiff(DatabaseModel lastModel, DatabaseModel newModel)
+QString SqlGeneratorBase::fieldDeclare(FieldModel *field)
+{
+    return field->name + " " + fieldType(field);
+}
+
+QStringList SqlGeneratorBase::diff(DatabaseModel lastModel, DatabaseModel newModel)
 {
     QStringList ret;
 
     QSet<QString> tableNames;
-    foreach (TableScheema *table, lastModel)
+    foreach (TableModel *table, lastModel)
         tableNames.insert(table->name());
 
-    foreach (TableScheema *table, newModel)
+    foreach (TableModel *table, newModel)
         tableNames.insert(table->name());
 
 
     foreach (QString tableName, tableNames) {
-        TableScheema *oldTable = lastModel.scheema(tableName);
-        TableScheema *newTable = newModel.scheema(tableName);
-        ret << getDiff(oldTable, newTable);
+        TableModel *oldTable = lastModel.model(tableName);
+        TableModel *newTable = newModel.model(tableName);
+        ret << diff(oldTable, newTable);
     }
 
     return ret;
 }
 
-QString SqlGeneratorBase::getDiff(Field *oldField, Field *newField)
+QString SqlGeneratorBase::diff(FieldModel *oldField, FieldModel *newField)
 {
     QString sql = "";
     if(oldField && newField)
@@ -69,12 +107,12 @@ QString SqlGeneratorBase::getDiff(Field *oldField, Field *newField)
             sql = "ALTER COLUMN ";
         else
             sql = "ADD COLUMN ";
-        sql.append(getColumnDef(newField));
+        sql.append(fieldDeclare(newField));
     }
     return sql;
 }
 
-QString SqlGeneratorBase::getDiff(TableScheema *oldTable, TableScheema *newTable)
+QString SqlGeneratorBase::diff(TableModel *oldTable, TableModel *newTable)
 {
     if(oldTable && newTable)
         if(*oldTable == *newTable)
@@ -86,23 +124,23 @@ QString SqlGeneratorBase::getDiff(TableScheema *oldTable, TableScheema *newTable
     QSet<QString> fieldNames;
 
     if(oldTable)
-        foreach (Field *f, oldTable->fields())
+        foreach (FieldModel *f, oldTable->fields())
             fieldNames.insert(f->name);
 
-    foreach (Field *f, newTable->fields())
+    foreach (FieldModel *f, newTable->fields())
         fieldNames.insert(f->name);
 
     QStringList columnSql;
     foreach (QString fieldName, fieldNames) {
-        Field *newField = newTable->field(fieldName);
+        FieldModel *newField = newTable->field(fieldName);
         if(oldTable){
-            Field *oldField = oldTable->field(fieldName);
+            FieldModel *oldField = oldTable->field(fieldName);
 
-            QString buffer =  getDiff(oldField, newField);
+            QString buffer =  diff(oldField, newField);
             if(!buffer.isNull())
                 columnSql << buffer;
         }else{
-            columnSql << getColumnDef(newField);
+            columnSql << fieldDeclare(newField);
         }
     }
     QString sql;
@@ -124,7 +162,7 @@ QString SqlGeneratorBase::getDiff(TableScheema *oldTable, TableScheema *newTable
     return sql;
 }
 
-QString SqlGeneratorBase::insertCommand(Table *t, QString tableName)
+QString SqlGeneratorBase::insertRecord(Table *t, QString tableName)
 {
     QString sql = "";
     QString key = t->primaryKey();
@@ -142,7 +180,7 @@ QString SqlGeneratorBase::insertCommand(Table *t, QString tableName)
     return sql;
 }
 
-QString SqlGeneratorBase::updateCommand(Table *t, QString tableName)
+QString SqlGeneratorBase::updateRecord(Table *t, QString tableName)
 {
     QString sql = "";
     QString key = t->primaryKey();
@@ -160,7 +198,7 @@ QString SqlGeneratorBase::updateCommand(Table *t, QString tableName)
     return sql;
 }
 
-QString SqlGeneratorBase::deleteCommand(Table *t, QString tableName)
+QString SqlGeneratorBase::deleteRecord(Table *t, QString tableName)
 {
     return QString("DELETE FROM %1 WHERE %2='%3'")
             .arg(tableName)
@@ -168,7 +206,7 @@ QString SqlGeneratorBase::deleteCommand(Table *t, QString tableName)
             .arg(t->primaryValue().toString());
 }
 
-QString SqlGeneratorBase::deleteTableRows(QString tableName, QString where)
+QString SqlGeneratorBase::deleteRecords(QString tableName, QString where)
 {
     QString sql = "";
     if(where.isEmpty() || where.isNull())
@@ -176,6 +214,39 @@ QString SqlGeneratorBase::deleteTableRows(QString tableName, QString where)
     else
         sql = "DELETE FROM " + tableName + " WHERE " + where;
     return sql;
+}
+
+QString SqlGeneratorBase::escapeFieldValue(QVariant &field) const
+{
+    switch (field.type()) {
+    case QVariant::Int:
+    case QVariant::Double:
+        return field.toString();
+        break;
+
+    case QVariant::String:
+        return "'" + field.toString() + "'";
+
+    case QVariant::DateTime:
+        return "'" + field.toDateTime().toString(Qt::ISODate)  + "'";
+
+    case QVariant::Date:
+        return "'" + field.toDate().toString(Qt::ISODate) + "'";
+
+    case QVariant::Time:
+        return "'" + field.toTime().toString(Qt::ISODate) + "'";
+
+    case QVariant::StringList:
+    case QVariant::List:
+        return "['" + field.toStringList().join("', '") + "']";
+
+    case QVariant::Invalid:
+        qFatal("Invalud field value");
+        return "<Invalid>";
+
+    default:
+        return "";
+    }
 }
 
 

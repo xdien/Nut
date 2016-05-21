@@ -33,7 +33,7 @@ class ChangeLogTable : public Table
     NUT_PRIMARY_AUTO_INCREMENT(id)
     NUT_DECLARE_FIELD(int, id, id, setId)
 
-    NUT_DECLARE_FIELD(QByteArray, data, data, setData)
+    NUT_DECLARE_FIELD(QString, data, data, setData)
 
     NUT_DECLARE_FIELD(int, versionMajor, versionMajor, setVersionMajor)
 

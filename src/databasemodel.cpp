@@ -19,29 +19,31 @@
 **************************************************************************/
 
 #include "databasemodel.h"
-#include "tablescheema.h"
+#include "tablemodel.h"
 
 #include <QJsonObject>
 
-DatabaseModel::DatabaseModel() : QList<TableScheema*>()
+QT_BEGIN_NAMESPACE
+
+DatabaseModel::DatabaseModel() : QList<TableModel*>(), _versionMajor(0), _versionMinor(0)
 {
 
 }
 
-TableScheema *DatabaseModel::scheema(QString tableName) const
+TableModel *DatabaseModel::model(QString tableName) const
 {
     for(int i = 0; i < size(); i++){
-        TableScheema *s = at(i);
+        TableModel *s = at(i);
         if(s->name() == tableName)
             return s;
     }
     return 0;
 }
 
-TableScheema *DatabaseModel::scheemaByClass(QString className) const
+TableModel *DatabaseModel::modelByClass(QString className) const
 {
     for(int i = 0; i < size(); i++){
-        TableScheema *s = at(i);
+        TableModel *s = at(i);
         if(s->className() == className)
             return s;
     }
@@ -54,8 +56,8 @@ bool DatabaseModel::operator ==(const DatabaseModel &other) const
         return false;
 
     for(int i = 0; i < size(); i++){
-        TableScheema *mine = at(i);
-        TableScheema *others = other.scheema(mine->name());
+        TableModel *mine = at(i);
+        TableModel *others = other.model(mine->name());
 
         if(!others)
             return false;
@@ -71,36 +73,39 @@ QJsonObject DatabaseModel::toJson() const
 {
     QJsonObject obj;
 
+//    obj.insert(QT_STRINGIFY(versionMajor), QJsonValue(_versionMajor));
+//    obj.insert(QT_STRINGIFY(versionMinor), QJsonValue(_versionMinor));
+
     for(int i = 0; i < size(); i++){
-        TableScheema *s = at(i);
+        TableModel *s = at(i);
         obj.insert(s->name(), s->toJson());
     }
 
     return obj;
 }
 
-Relation *DatabaseModel::relationByClassNames(QString masterClassName, QString childClassName)
+RelationModel *DatabaseModel::relationByClassNames(QString masterClassName, QString childClassName)
 {
-    TableScheema *childTable = scheemaByClass(childClassName);
+    TableModel *childTable = modelByClass(childClassName);
 
     if(!childTable)
         return 0;
 
-    foreach (Relation *rel, childTable->foregionKeys())
+    foreach (RelationModel *rel, childTable->foregionKeys())
         if(rel->className == masterClassName)
             return rel;
 
     return 0;
 }
 
-Relation *DatabaseModel::relationByTableNames(QString masterTableName, QString childTableName)
+RelationModel *DatabaseModel::relationByTableNames(QString masterTableName, QString childTableName)
 {
-    TableScheema *childTable = scheema(childTableName);
+    TableModel *childTable = model(childTableName);
 
     if(!childTable)
         return 0;
 
-    foreach (Relation *rel, childTable->foregionKeys())
+    foreach (RelationModel *rel, childTable->foregionKeys())
         if(rel->table->name() == masterTableName)
             return rel;
 
@@ -110,9 +115,38 @@ Relation *DatabaseModel::relationByTableNames(QString masterTableName, QString c
 DatabaseModel DatabaseModel::fromJson(QJsonObject &json)
 {
     DatabaseModel model;
+
+//    model.setVersionMajor(json.value(QT_STRINGIFY(versionMajor)).toInt());
+//    model.setVersionMinor(json.value(QT_STRINGIFY(versionMinor)).toInt());
+
     foreach (QString key, json.keys()) {
-        TableScheema *sch = new TableScheema(json.value(key).toObject(), key);
+        if(!json.value(key).isObject())
+            continue;
+
+        TableModel *sch = new TableModel(json.value(key).toObject(), key);
         model.append(sch);
     }
     return model;
 }
+
+int DatabaseModel::versionMajor() const
+{
+    return _versionMajor;
+}
+
+void DatabaseModel::setVersionMajor(int versionMajor)
+{
+    _versionMajor = versionMajor;
+}
+
+int DatabaseModel::versionMinor() const
+{
+    return _versionMinor;
+}
+
+void DatabaseModel::setVersionMinor(int versionMinor)
+{
+    _versionMinor = versionMinor;
+}
+
+QT_END_NAMESPACE

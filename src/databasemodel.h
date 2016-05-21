@@ -23,25 +23,35 @@
 
 #include <QtCore/QList>
 
-class TableScheema;
-struct Relation;
+QT_BEGIN_NAMESPACE
+
+class TableModel;
+struct RelationModel;
 class QJsonObject;
-class DatabaseModel : public QList<TableScheema*>
+class DatabaseModel : public QList<TableModel*>
 {
+    int _versionMajor, _versionMinor;
 public:
     DatabaseModel();
 
-    TableScheema *scheema(QString tableName) const;
-    TableScheema *scheemaByClass(QString className) const;
+    TableModel *model(QString tableName) const;
+    TableModel *modelByClass(QString className) const;
 
-    Relation *relationByClassNames(QString masterClassName, QString childClassName);
-    Relation *relationByTableNames(QString masterTableName, QString childTableName);
+    RelationModel *relationByClassNames(QString masterClassName, QString childClassName);
+    RelationModel *relationByTableNames(QString masterTableName, QString childTableName);
 
     bool operator ==(const DatabaseModel &other) const;
 
     static DatabaseModel fromJson(QJsonObject &json);
     QJsonObject toJson() const;
 
+    int versionMajor() const;
+    void setVersionMajor(int versionMajor);
+
+    int versionMinor() const;
+    void setVersionMinor(int versionMinor);
 };
+
+QT_END_NAMESPACE
 
 #endif // DATABASEMODEL_H

@@ -35,7 +35,7 @@ TableSetBase::TableSetBase(Table *parent) : QObject(parent), _database(0), _tabl
 
 void TableSetBase::save(Database *db)
 {
-    foreach (Table *t, _tables) {
+    foreach (Table *t, _tablesList) {
         if(_table)
             t->setParentTable(_table);
 
@@ -47,12 +47,31 @@ void TableSetBase::save(Database *db)
     }
 }
 
+void TableSetBase::clearChilds()
+{
+    foreach (Table *t, _tablesList)
+        delete t;
+}
+
 void TableSetBase::add(Table *t)
 {
-    _tables.insert(t);
+    if(!_tables.contains(t)){
+        _tables.insert(t);
+        _tablesList.append(t);
+    }
 }
 
 QString TableSetBase::childClassName() const
 {
     return _childClassName;
+}
+
+Database *TableSetBase::database() const
+{
+    return _database;
+}
+
+void TableSetBase::setDatabase(Database *database)
+{
+    _database = database;
 }

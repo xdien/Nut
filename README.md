@@ -15,11 +15,13 @@
 
 ```cpp
 autoq = FROM(db.posts())
-        WHERE(Post::id() == %1)
-        BIND(postId);
+        WHERE(Post::idField() == postId);
+
 auto posts = q->toList();
 // now posts is a QList<Post*> contain all posts in
 //  database that has id equal to postId variable
+auto post = q->first();
+// post is first row in database that its id is equal to postId
 ```
 
 ### Adding to database:
@@ -41,8 +43,7 @@ db.saveChanges();
 ### Modify database data:
 ```cpp
 auto q = FROM(db.posts())
-        WHERE(Post::id() == %1)
-        BIND(postId);
+        WHERE(Post::idField() == postId);
 
 Post *post = q->first();
 

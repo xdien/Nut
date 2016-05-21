@@ -25,9 +25,9 @@
 #include <QtCore/qglobal.h>
 #include <QtCore/QSet>
 
-#include "tablescheema.h"
+#include "tablemodel.h"
 #include "defines.h"
-//#include "tableset.h"
+#include "wherephrase.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -52,7 +52,7 @@ public:
     void save(Database *db);
 
     QString primaryKey() const;
-    QString autoIncrementField() const;
+    bool isPrimaryKeyAutoIncrement() const;
     QVariant primaryValue() const;
     Status status() const;
     void setStatus(const Status &status);
@@ -77,14 +77,10 @@ private:
 
     QSet<TableSetBase*> tableSets;
 
-//    template<class T>
-//    friend class TableSet;
     template<class T>
     friend class Query;
-//    friend class Database;
 };
 
 QT_END_NAMESPACE
 
-#include "tableset.cpp"
 #endif // TABLE_H

@@ -1,16 +1,35 @@
+/**************************************************************************
+**
+** This file is part of Nut project.
+** https://github.com/HamedMasafi/Nut
+**
+** Nut is free software: you can redistribute it and/or modify
+** it under the terms of the GNU Lesser General Public License as published by
+** the Free Software Foundation, either version 3 of the License, or
+** (at your option) any later version.
+**
+** Nut is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU Lesser General Public License for more details.
+**
+** You should have received a copy of the GNU Lesser General Public License
+** along with Nut.  If not, see <http://www.gnu.org/licenses/>.
+**
+**************************************************************************/
+
 #include "mysqlgenerator.h"
-#include "tablescheema.h"
+#include "tablemodel.h"
 
 QT_BEGIN_NAMESPACE
 
-MySqlGenerator::MySqlGenerator() : SqlGeneratorBase()
+MySqlGenerator::MySqlGenerator(QObject *parent) : SqlGeneratorBase(parent)
 {
 
 }
 
-QString MySqlGenerator::getColumnDef(Field *field)
+QString MySqlGenerator::fieldType(FieldModel *field)
 {
-    QString ret = field->name + " ";
     QString dbType;
 
     switch (field->type) {
@@ -19,6 +38,17 @@ QString MySqlGenerator::getColumnDef(Field *field)
         break;
     case QVariant::ByteArray:
         dbType = "blob";
+        break;
+    case QVariant::DateTime:
+        dbType = "datetime";
+        break;
+
+    case QVariant::Date:
+        dbType = "date";
+        break;
+
+    case QVariant::Time:
+        dbType = "time";
         break;
     case QVariant::Double:
         dbType = "real";
@@ -35,22 +65,11 @@ QString MySqlGenerator::getColumnDef(Field *field)
         else
             dbType = "text";
         break;
-    case QVariant::DateTime:
-        dbType = "datetime";
-        break;
-
-    case QVariant::Date:
-        dbType = "date";
-        break;
-
-    case QVariant::Time:
-        dbType = "time";
-        break;
     default:
         dbType = "";
     }
-    ret.append(dbType);
-    return ret;
+
+    return dbType;
 }
 
 QT_END_NAMESPACE

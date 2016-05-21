@@ -18,6 +18,8 @@ class Post : public Table
     NUT_LEN(title, 50)
     NUT_DECLARE_FIELD(QString, title, title, setTitle)
 
+    NUT_DECLARE_FIELD(QDateTime, saveDate, saveDate, setSaveDate)
+
     NUT_DECLARE_FIELD(QString, body, body, setBody)
 
     NUT_DECLARE_CHILD_TABLE(Comment, comments)

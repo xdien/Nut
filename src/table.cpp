@@ -39,57 +39,37 @@ void Table::add(TableSetBase *t)
 
 QString Table::primaryKey() const
 {
-    static QString ret = QString::null;
+//    static QString ret = QString::null;
 
-    if(ret == QString::null){
-        for(int i = 0; i < metaObject()->classInfoCount(); i++){
-            QMetaClassInfo ci = metaObject()->classInfo(i);
-            QString ciName = ci.name();
+//    if(ret == QString::null){
+//        for(int i = 0; i < metaObject()->classInfoCount(); i++){
+//            QMetaClassInfo ci = metaObject()->classInfo(i);
+//            QString ciName = ci.name();
 
-            if(ciName.startsWith(__nut_NAME_PERFIX))
-                ciName.remove(__nut_NAME_PERFIX);
+//            if(ciName.startsWith(__nut_NAME_PERFIX))
+//                ciName.remove(__nut_NAME_PERFIX);
 
-            if(ciName.contains(" ")){
-                QStringList parts = ciName.split(" ");
-                QString propName = parts.at(1);
-                if(propName == __nut_PRIMARY_KEY)
-                    ret = parts.at(0);
-            }
-        }
+//            if(ciName.contains(" ")){
+//                QStringList parts = ciName.split(" ");
+//                QString propName = parts.at(1);
+//                if(propName == __nut_PRIMARY_KEY)
+//                    ret = parts.at(0);
+//            }
+//        }
 
-        if(ret == QString::null)
-            ret = "";
-    }
+//        if(ret == QString::null)
+//            ret = "";
+//    }
 
-    return ret;
+//    return ret;
+    return TableModel::model(metaObject()->className())->primaryKey();
 }
 
-QString Table::autoIncrementField() const
+bool Table::isPrimaryKeyAutoIncrement() const
 {
-    static QString ret = QString::null;
-
-    if(ret == QString::null){
-        for(int i = 0; i < metaObject()->classInfoCount(); i++){
-            QMetaClassInfo ci = metaObject()->classInfo(i);
-            QString ciName = ci.name();
-
-            if(ciName.startsWith(__nut_NAME_PERFIX))
-                ciName.remove(__nut_NAME_PERFIX);
-
-            if(ciName.contains(" ")){
-                QStringList parts = ciName.split(" ");
-                QString propName = parts.at(1);
-                if(propName == __nut_AUTO_INCREMENT)
-                    ret = parts.at(0);
-            }
-        }
-
-        if(ret == QString::null)
-            ret = "";
-    }
-
-    return ret;
+    return TableModel::model(metaObject()->className())->field(primaryKey())->isAutoIncrement;
 }
+
 
 QVariant Table::primaryValue() const
 {
@@ -101,7 +81,6 @@ void Table::propertyChanged(QString propName)
     if(propName == primaryKey())
         return;
 
-//    qDebug() << "Table::propertyChanged" << metaObject()->className() << propName;
     _changedProperties.insert(propName);
     if(_status == FeatchedFromDB)
         _status = Modified;
@@ -118,14 +97,17 @@ QSet<QString> Table::changedProperties() const
 bool Table::setParentTable(Table *master)
 {
     QString masterClassName = master->metaObject()->className();
-    TableScheema *myModel = TableScheema::findByClassName(metaObject()->className());
+    TableModel *myModel = TableModel::findByClassName(metaObject()->className());
 
-    foreach (Relation *r, myModel->foregionKeys())
+    foreach (RelationModel *r, myModel->foregionKeys())
         if(r->className == masterClassName)
         {
             setProperty(QString(r->localColumn).toLatin1().data(), master->primaryValue());
             _changedProperties.insert(r->localColumn);
+            return true;
         }
+
+    return false;
 }
 
 TableSetBase *Table::tableSet() const
@@ -141,11 +123,9 @@ void Table::setTableSet(TableSetBase *parent)
 
 void Table::save(Database *db)
 {
-    QSqlQuery q = db->exec(db->sqlGenertor()->saveSql(this, db->tableName(metaObject()->className())));
-    //if(q.next())
-    //    setProperty(primaryKey().toLatin1().data(), q.value(0));
+    QSqlQuery q = db->exec(db->sqlGenertor()->saveRecord(this, db->tableName(metaObject()->className())));
 
-    if(status() == Added)
+    if(status() == Added && isPrimaryKeyAutoIncrement())
         setProperty(primaryKey().toLatin1().data(), q.lastInsertId());
 
     foreach(TableSetBase *ts, tableSets)

@@ -25,100 +25,103 @@
 #include <QJsonArray>
 #include <QJsonObject>
 
-#include "tablescheema.h"
+#include "tablemodel.h"
 #include "defines_p.h"
 
 
-QSet<TableScheema*> TableScheema::_allModels;
+QSet<TableModel*> TableModel::_allModels;
 //QMap<int, TableScheema*> TableScheema::scheemas;
 
-QString TableScheema::name() const
+QString TableModel::name() const
 {
     return _name;
 }
 
-void TableScheema::setName(const QString &name)
+void TableModel::setName(const QString &name)
 {
     _name = name;
 }
 
-QString TableScheema::className() const
+QString TableModel::className() const
 {
     return _className;
 }
 
-void TableScheema::setClassName(const QString &className)
+void TableModel::setClassName(const QString &className)
 {
     _className = className;
 }
 
-int TableScheema::typeId() const
+int TableModel::typeId() const
 {
     return _typeId;
 }
 
-void TableScheema::setTypeId(const int &typeId)
+void TableModel::setTypeId(const int &typeId)
 {
     _typeId = typeId;
 }
 
-Field *TableScheema::field(QString name) const
+FieldModel *TableModel::field(QString name) const
 {
-    foreach (Field *f, _fields)
+    foreach (FieldModel *f, _fields)
         if(f->name == name)
             return f;
     
     return 0;
 }
 
-QList<Field *> TableScheema::fields() const
+QList<FieldModel *> TableModel::fields() const
 {
     return _fields;
 }
 
-QList<Relation *> TableScheema::foregionKeys() const
+QList<RelationModel *> TableModel::foregionKeys() const
 {
     return _foregionKeys;
 }
 
-QStringList TableScheema::fieldsNames() const
+QStringList TableModel::fieldsNames() const
 {
     QStringList ret;
-    foreach (Field *f, _fields)
+    foreach (FieldModel *f, _fields)
         ret.append(f->name);
     return ret;
 }
 
-TableScheema *TableScheema::findByTypeId(int typeId)
+TableModel *TableModel::findByTypeId(int typeId)
 {
-    foreach (TableScheema *model, _allModels)
+    foreach (TableModel *model, _allModels)
         if(model->typeId() == typeId)
             return model;
     return 0;
 }
 
-TableScheema *TableScheema::findByName(QString name)
+TableModel *TableModel::findByName(QString name)
 {
-    foreach (TableScheema *model, _allModels)
+    foreach (TableModel *model, _allModels)
         if(model->name() == name)
             return model;
     return 0;
 }
 
-TableScheema *TableScheema::findByClassName(QString className)
+TableModel *TableModel::findByClassName(QString className)
 {
-    foreach (TableScheema *model, _allModels)
+    foreach (TableModel *model, _allModels)
         if(model->className() == className)
             return model;
     return 0;
 }
 
-bool TableScheema::operator ==(const TableScheema &t) const{
+bool TableModel::operator ==(const TableModel &t) const{
     if(_name != t.name())
         return false;
 
-    foreach (Field *f, _fields) {
-        Field *tf = t.field(f->name);
+    if(fields().count() != t.fields().count())
+        return false;
+
+    foreach (FieldModel *f, _fields) {
+        FieldModel *tf = t.field(f->name);
         if(!tf)
             return false;
 
@@ -129,12 +132,12 @@ bool TableScheema::operator ==(const TableScheema &t) const{
     return true;
 }
 
-bool TableScheema::operator !=(const TableScheema &t) const
+bool TableModel::operator !=(const TableModel &t) const
 {
     return !(*this == t);
 }
 
-TableScheema::TableScheema(int typeId, QString tableName)
+TableModel::TableModel(int typeId, QString tableName)
 {
     const QMetaObject *tableMetaObject = QMetaType::metaObjectForType(typeId);
 
@@ -153,7 +156,7 @@ TableScheema::TableScheema(int typeId, QString tableName)
             QString propName = parts.at(1);
 
             if(propName == __nut_FIELD){
-                Field *f = new Field;
+                FieldModel *f = new FieldModel;
                 f->name = parts.at(0);
                 _fields.append(f);
             }
@@ -163,13 +166,14 @@ TableScheema::TableScheema(int typeId, QString tableName)
     for(int j = 1; j < tableMetaObject->propertyCount(); j++){
         QMetaProperty fieldProperty = tableMetaObject->property(j);
 
-        Field *f = field(fieldProperty.name());
-        if(!f)
+        FieldModel *fieldObj = field(fieldProperty.name());
+        foreach (FieldModel *f, _fields)
+            if(f->name == fieldProperty.name())
+                f = fieldObj;
+        if(!fieldObj)
             continue;
 
-        f->type = fieldProperty.type();
-
-        _fields.append(f);
+        fieldObj->type = fieldProperty.type();
     }
 
     // Browse class infos
@@ -185,7 +189,7 @@ TableScheema::TableScheema(int typeId, QString tableName)
             QString propName = parts.at(1);
 
             if(propName == __nut_FOREGION_KEY){
-                Relation *fk = new Relation;
+                RelationModel *fk = new RelationModel;
                 fk->localColumn = parts.at(0);
                 fk->foregionColumn = value;
                 fk->className = value;
@@ -197,7 +201,7 @@ TableScheema::TableScheema(int typeId, QString tableName)
             }
 
 
-            Field *f = field(parts.at(0));
+            FieldModel *f = field(parts.at(0));
             if(!f)
                 continue;
 
@@ -211,6 +215,8 @@ TableScheema::TableScheema(int typeId, QString tableName)
                 f->isPrimaryKey = true;
             else if(propName == __nut_AUTO_INCREMENT)
                 f->isAutoIncrement = true;
+            else if(propName == __nut_UNIQUE)
+                f->isUnique = true;
 
         }
     }
@@ -234,14 +240,14 @@ TableScheema::TableScheema(int typeId, QString tableName)
         "primary_key": "id"
     },
 */
-TableScheema::TableScheema(QJsonObject json, QString tableName)
+TableModel::TableModel(QJsonObject json, QString tableName)
 {
     _name = tableName;
 
     QJsonObject fields = json.value(__FIELDS).toObject();
     foreach (QString key, fields.keys()) {
         QJsonObject fieldObject = fields.value(key).toObject();
-        Field *f = new Field;
+        FieldModel *f = new FieldModel;
         f->name = fieldObject.value(__NAME).toString();
         f->type = QVariant::nameToType(fieldObject.value(__TYPE).toString().toLatin1().data());
 
@@ -264,12 +270,12 @@ TableScheema::TableScheema(QJsonObject json, QString tableName)
 
 }
 
-QJsonObject TableScheema::toJson() const
+QJsonObject TableModel::toJson() const
 {
     QJsonObject obj;
     QJsonObject fieldsObj;
 
-    foreach (Field *f, _fields) {
+    foreach (FieldModel *f, _fields) {
         QJsonObject fieldObj;
         fieldObj.insert(__NAME, f->name);
         fieldObj.insert(__TYPE, QVariant::typeToName(f->type));
@@ -312,27 +318,27 @@ QJsonObject TableScheema::toJson() const
 //    }
 //}
 
-//TableScheema *TableScheema::scheema(QString className)
-//{
-//    foreach (TableScheema *s, scheemas)
-//        if(s->_className == className)
-//            return s;
-//    return 0;
-//}
-
-Relation *TableScheema::foregionKey(QString otherTable) const
+TableModel *TableModel::model(QString className)
 {
-    foreach (Relation *fk, _foregionKeys)
+    foreach (TableModel *s, _allModels)
+        if(s->_className == className)
+            return s;
+    return 0;
+}
+
+RelationModel *TableModel::foregionKey(QString otherTable) const
+{
+    foreach (RelationModel *fk, _foregionKeys)
         if(fk->className == otherTable)
             return fk;
 
     return 0;
 }
 
-QString TableScheema::toString() const
+QString TableModel::toString() const
 {
     QStringList sl;
-    foreach (Field *f, _fields)
+    foreach (FieldModel *f, _fields)
         sl.append(f->name + " " + QVariant::typeToName(f->type));
 
     QString ret = QString("%1 (%2)")
@@ -341,9 +347,9 @@ QString TableScheema::toString() const
     return ret;
 }
 
-QString TableScheema::primaryKey() const
+QString TableModel::primaryKey() const
 {
-    foreach (Field *f, _fields)
+    foreach (FieldModel *f, _fields)
         if(f->isPrimaryKey)
             return f->name;
     return QString::null;

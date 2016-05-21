@@ -9,7 +9,7 @@ class WeblogDatabase : public Database
 {
     Q_OBJECT
 
-    NUT_DB_VERSION(1, 0)
+    NUT_DB_VERSION(1, 1)
 
     NUT_DECLARE_TABLE(Post, post)
 
