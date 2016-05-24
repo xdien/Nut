@@ -54,3 +54,5 @@ if(post) {
     qWarning("No post found!");
 }
 ```
+
+For more information read [Wiki](wiki).
