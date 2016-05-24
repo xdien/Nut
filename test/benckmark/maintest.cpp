@@ -2,6 +2,8 @@
 #include <QJsonDocument>
 #include <QSqlError>
 
+#include "consts.h"
+
 #include "maintest.h"
 #include "query.h"
 #include "tableset.h"
@@ -22,28 +24,15 @@ void MainTest::initTestCase()
     qDebug() << "Comment type id:" << qRegisterMetaType<Comment*>();
     qDebug() << "DB type id:" << qRegisterMetaType<WeblogDatabase*>();
 
-    //sql server
-//    db.setDriver("QODBC");
-//    db.setHostName("127.0.0.1");
-//    db.setDatabaseName("DRIVER={SQL Server};Server=.;Database=Nut;Uid=sa;Port=1433;Pwd=qwe123!@#;WSID=.");
-//    db.setUserName("sa");
-//    db.setPassword("qwe123!@#");
-
-    // postgres
-    db.setDriver("QPSQL");
-    db.setHostName("127.0.0.1");
-    db.setDatabaseName("nutdb3");
-    db.setUserName("postgres");
-    db.setPassword("856856");
-
-// mysql
-//    db.setDriver("QMYSQL");
-//    db.setHostName("127.0.0.1");
-//    db.setDatabaseName("nutdb");
-//    db.setUserName("root");
-//    db.setPassword("onlyonlyi");
+    db.setDriver(DRIVER);
+    db.setHostName(HOST);
+    db.setDatabaseName(DATABASE);
+    db.setUserName(USERNAME);
+    db.setPassword(PASSWORD);
 
     bool ok = db.open();
+
+    QTEST_ASSERT(ok);
 
     QTEST_ASSERT(ok);
 }
