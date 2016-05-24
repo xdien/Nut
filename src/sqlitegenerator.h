@@ -27,7 +27,7 @@
 class SqliteGenerator : public SqlGeneratorBase
 {
 public:
-    SqliteGenerator(QObject *parent = 0);
+    SqliteGenerator(Database *parent = 0);
 
     QString fieldType(FieldModel *field);
 };

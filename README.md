@@ -7,7 +7,7 @@
 
  - Easy to use
  - Automatically create and update database
- - IDE auto complete support
+ - IDE auto complete support, No hard-code nedded
  - Table join detect 
 
 ## Sample Codes
@@ -26,7 +26,7 @@ auto post = q->first();
 
 ### Adding to database:
 ```cpp
-Post*newPost = new Post;
+Post *newPost = new Post;
 newPost->setTitle("post title");
 
 db.posts()->append(newPost);

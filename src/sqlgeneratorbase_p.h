@@ -31,10 +31,22 @@ class Table;
 struct FieldModel;
 class DatabaseModel;
 class TableModel;
+class WherePhrase;
+class Database;
 class SqlGeneratorBase : public QObject
 {
+//    Q_OBJECT
+
+    Database *_database;
 public:
-    SqlGeneratorBase(QObject *parent = 0);
+    enum CommandType{
+        Select,
+        Insert,
+        Update,
+        Delete
+    };
+
+    SqlGeneratorBase(Database *parent);
     virtual ~SqlGeneratorBase();
 
     virtual QString masterDatabaseName(QString databaseName);
@@ -55,6 +67,14 @@ public:
     virtual QString deleteRecords(QString tableName, QString where);
 
     virtual QString escapeFieldValue(QVariant &field) const;
+
+    virtual QString selectCommand(QList<WherePhrase> &wheres, QHash<QString, QString>  &orders,
+                                  QString tableName, QString joinClassName);
+
+    virtual QString deleteCommand(QList<WherePhrase> &wheres, QString tableName);
+
+private:
+    QString createWhere(QList<WherePhrase> &wheres);
 };
 
 QT_END_NAMESPACE

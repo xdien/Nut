@@ -29,7 +29,7 @@ QT_BEGIN_NAMESPACE
 class MySqlGenerator : public SqlGeneratorBase
 {
 public:
-    MySqlGenerator(QObject *parent = 0);
+    MySqlGenerator(Database *parent = 0);
 
     QString fieldType(FieldModel *field);
 

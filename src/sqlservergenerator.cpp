@@ -26,7 +26,7 @@
 
 QT_BEGIN_NAMESPACE
 
-SqlServerGenerator::SqlServerGenerator(QObject *parent) : SqlGeneratorBase(parent)
+SqlServerGenerator::SqlServerGenerator(Database *parent) : SqlGeneratorBase(parent)
 {
 
 }

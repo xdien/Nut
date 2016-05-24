@@ -29,7 +29,7 @@ QT_BEGIN_NAMESPACE
 class PostgreSqlGenerator : public SqlGeneratorBase
 {
 public:
-    PostgreSqlGenerator(QObject *parent = 0);
+    PostgreSqlGenerator(Database *parent);
 
     QString fieldType(FieldModel *field);
 

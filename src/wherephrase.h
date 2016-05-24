@@ -28,7 +28,6 @@
 #include <QDateTime>
 #include <QTime>
 
-
 QT_BEGIN_NAMESPACE
 
 class SqlGeneratorBase;
@@ -88,62 +87,71 @@ struct PhraseData{
     QString command(SqlGeneratorBase *generator) const;
 };
 
-class FieldPhrase{
+class WherePhrase{
+protected:
     PhraseData *data;
     bool willDeleteData;
+
 public:
 
     QString text;
 
-    FieldPhrase(const char *className, const char* s);
+    WherePhrase(const char *className, const char* s);
 
-    FieldPhrase(PhraseData *l);
-    FieldPhrase(PhraseData *l, PhraseData::Condition o);
-    FieldPhrase(PhraseData *l, PhraseData::Condition o, PhraseData *r);
-    FieldPhrase(PhraseData *l, PhraseData::Condition o, QVariant r);
+    WherePhrase(PhraseData *l);
+    WherePhrase(PhraseData *l, PhraseData::Condition o);
+    WherePhrase(PhraseData *l, PhraseData::Condition o, PhraseData *r);
+    WherePhrase(PhraseData *l, PhraseData::Condition o, QVariant r);
 
-    ~FieldPhrase();
+    ~WherePhrase();
 
     QString command(SqlGeneratorBase *generator);
 
     void deleteData(PhraseData *d);
 
-    FieldPhrase operator ==(const FieldPhrase &other);
-    FieldPhrase operator !=(const FieldPhrase &other);
-    FieldPhrase operator <(const FieldPhrase &other);
-    FieldPhrase operator >(const FieldPhrase &other);
-    FieldPhrase operator <=(const FieldPhrase &other);
-    FieldPhrase operator >=(const FieldPhrase &other);
+    WherePhrase operator ==(const WherePhrase &other);
+    WherePhrase operator !=(const WherePhrase &other);
+    WherePhrase operator <(const WherePhrase &other);
+    WherePhrase operator >(const WherePhrase &other);
+    WherePhrase operator <=(const WherePhrase &other);
+    WherePhrase operator >=(const WherePhrase &other);
 
-    FieldPhrase operator =(const FieldPhrase &other);
+    WherePhrase operator =(const WherePhrase &other);
 
-    FieldPhrase operator +(const FieldPhrase &other);
-    FieldPhrase operator -(const FieldPhrase &other);
-    FieldPhrase operator *(const FieldPhrase &other);
-    FieldPhrase operator /(const FieldPhrase &other);
+    WherePhrase operator +(const WherePhrase &other);
+    WherePhrase operator -(const WherePhrase &other);
+    WherePhrase operator *(const WherePhrase &other);
+    WherePhrase operator /(const WherePhrase &other);
 
-    FieldPhrase operator &&(const FieldPhrase &other);
-    FieldPhrase operator ||(const FieldPhrase &other);
+    WherePhrase operator &&(const WherePhrase &other);
+    WherePhrase operator ||(const WherePhrase &other);
 
-    FieldPhrase operator &(const FieldPhrase &other);
+    WherePhrase operator &(const WherePhrase &other);
 
-    FieldPhrase operator ,(const FieldPhrase &other);
 
-    FieldPhrase operator !();
+    WherePhrase operator ==(const QVariant &other);
+    WherePhrase operator !=(const QVariant &other);
+    WherePhrase operator <(const QVariant &other);
+    WherePhrase operator >(const QVariant &other);
+    WherePhrase operator <=(const QVariant &other);
+    WherePhrase operator >=(const QVariant &other);
 
-    FieldPhrase operator ==(const QVariant &other);
-    FieldPhrase operator !=(const QVariant &other);
-    FieldPhrase operator <(const QVariant &other);
-    FieldPhrase operator >(const QVariant &other);
-    FieldPhrase operator <=(const QVariant &other);
-    FieldPhrase operator >=(const QVariant &other);
 
-    FieldPhrase operator =(const QVariant &other);
+};
 
-    FieldPhrase isNull();
-    FieldPhrase in(QVariantList list);
-    FieldPhrase in(QStringList list);
-    FieldPhrase like(QString pattern);
+class FieldPhrase: public WherePhrase{
+public:
+    FieldPhrase(const char *className, const char* s);
+
+    WherePhrase operator &(const QVariant &other);
+
+    WherePhrase operator =(const QVariant &other);
+    WherePhrase operator !();
+
+    WherePhrase isNull();
+    WherePhrase in(QVariantList list);
+    WherePhrase in(QStringList list);
+    WherePhrase like(QString pattern);
 };
 
 QT_END_NAMESPACE

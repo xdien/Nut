@@ -44,7 +44,7 @@ class NUT_EXPORT Query : public QueryBase
     Database *_database;
     TableSetBase *_tableSet;
     QString _joinClassName;
-    QList<FieldPhrase> _wheres;
+    QList<WherePhrase> _wheres;
 public:
     Query(Database *database, TableSetBase *tableSet);
 
@@ -59,7 +59,7 @@ public:
     int remove();
 
     Query<T> *join(const QString &tableName);
-    Query<T> *setWhere(FieldPhrase where);
+    Query<T> *setWhere(WherePhrase where);
 //    Query<T> *setWhere(const QString &where);
     Query<T> *orderBy(QString fieldName, QString type);
 
@@ -92,7 +92,7 @@ Q_OUTOFLINE_TEMPLATE QList<T *> Query<T>::toList(int count)
     QList<T*> result;
     _select = "*";
     qDebug()<<queryText();
-    QSqlQuery q = _database->exec(queryText());
+    QSqlQuery q = _database->exec(_database->sqlGenertor()->selectCommand(_wheres, _orders, _tableName, _joinClassName));
 
     QString pk =_database->model().model(_tableName)->primaryKey();
     QVariant lastPkValue = QVariant();
@@ -176,7 +176,8 @@ Q_OUTOFLINE_TEMPLATE int Query<T>::count()
 template<class T>
 Q_OUTOFLINE_TEMPLATE int Query<T>::remove()
 {
-    QString sql = _database->sqlGenertor()->deleteRecords(_tableName, queryText());
+    QString sql = _database->sqlGenertor()->deleteCommand(_wheres, _tableName);
+//            _database->sqlGenertor()->deleteRecords(_tableName, queryText());
 //    sql = compileCommand(sql);
     QSqlQuery q = _database->exec(sql);
     return q.numRowsAffected();
@@ -190,7 +191,7 @@ Q_OUTOFLINE_TEMPLATE Query<T> *Query<T>::join(const QString &tableName)
 }
 
 template<class T>
-Q_OUTOFLINE_TEMPLATE Query<T> *Query<T>::setWhere(FieldPhrase where)
+Q_OUTOFLINE_TEMPLATE Query<T> *Query<T>::setWhere(WherePhrase where)
 {
     _wheres.append(where);
     return this;
@@ -240,7 +241,7 @@ Q_OUTOFLINE_TEMPLATE QString Query<T>::queryText()
 {
     QStringList orderby;
     QString q = "";//compileCommand(_where);
-    foreach (FieldPhrase p, _wheres) {
+    foreach (WherePhrase p, _wheres) {
         if(q != "")
             q.append(" AND ");
         q.append(p.command(_database->sqlGenertor()));
@@ -284,6 +285,9 @@ Q_OUTOFLINE_TEMPLATE QString Query<T>::queryText()
 
     for(int i = 0; i < _database->model().count(); i++)
         command = command.replace(_database->model().at(i)->className() + "." , _database->model().at(i)->name() + ".");
+
+    qDebug() << command
+             << _database->sqlGenertor()->selectCommand(_wheres, _orders, _tableName, _joinClassName);
     return command;
 }
 

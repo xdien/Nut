@@ -29,7 +29,7 @@ QT_BEGIN_NAMESPACE
 class SqlServerGenerator : public SqlGeneratorBase
 {
 public:
-    SqlServerGenerator(QObject *parent = 0);
+    SqlServerGenerator(Database *parent = 0);
     
     QString masterDatabaseName(QString databaseName);
 

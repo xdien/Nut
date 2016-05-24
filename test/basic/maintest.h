@@ -12,7 +12,6 @@ class MainTest : public QObject
     WeblogDatabase db;
     int postId;
     Post *post;
-    Query<Post> *q;
 public:
     explicit MainTest(QObject *parent = 0);
 

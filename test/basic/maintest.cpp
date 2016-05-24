@@ -18,7 +18,6 @@ MainTest::MainTest(QObject *parent) : QObject(parent)
 
 void MainTest::initTestCase()
 {
-//    qDebug() << "Table type id:" << qRegisterMetaType<Table*>();
     qDebug() << "User type id:" << qRegisterMetaType<Post*>();
     qDebug() << "Comment type id:" << qRegisterMetaType<Comment*>();
     qDebug() << "DB type id:" << qRegisterMetaType<WeblogDatabase*>();
@@ -30,21 +29,6 @@ void MainTest::initTestCase()
 //    db.setUserName("sa");
 //    db.setPassword("qwe123!@#");
 
-    QStringList list;
-    list << "one" << "two" << "three";
-    FieldPhrase q = (Post::idField() = 1)
-            & (Post::saveDateField() = QDateTime::currentDateTime())
-            & (Post::saveDateField() < QDateTime::currentDateTime()
-//            (/*(Post::saveDateField() > Post::idField())
-//                     && */
-//                     !Post::saveDateField().isNull()
-//                     &&
-//                      !Post::idField().in(list)
-//                     || (Post::idField() == 4)
-//                     && Post::saveDateField() >= QDateTime::currentDateTime()
-                     /*|| Post::saveDateField().isNull()*/);
-    qDebug() << "Command="<< q.command(0);
-    QTEST_ASSERT(1==2);
     // postgres
     db.setDriver("QPSQL");
     db.setHostName("127.0.0.1");
@@ -98,9 +82,12 @@ void MainTest::createPost()
 
 void MainTest::selectPosts()
 {
-    q = FROM(db.posts())
-        JOIN(Comment)
-        WHERE(Post::idField() == postId);
+//    auto q = FROM(db.posts())
+//        JOIN(Comment)
+//        WHERE(Post::idField() == postId);
+    auto q = db.posts()->createQuery();
+    q->join("Comment");
+    q->setWhere(Post::idField() == postId);
 
     auto posts = q->toList();
 
@@ -180,5 +167,6 @@ void MainTest::deletePost()
 
     QTEST_ASSERT(count == 0);
 }
+
 
 QTEST_MAIN(MainTest)

@@ -23,6 +23,7 @@
 #include <QTime>
 #include <QVariant>
 
+#include "database.h"
 #include "databasemodel.h"
 #include "sqlgeneratorbase_p.h"
 #include "table.h"
@@ -30,9 +31,10 @@
 
 QT_BEGIN_NAMESPACE
 
-SqlGeneratorBase::SqlGeneratorBase(QObject *parent) : QObject(parent)
+SqlGeneratorBase::SqlGeneratorBase(Database *parent) : QObject((QObject*)parent)
 {
-
+    if(parent)
+        _database = parent;
 }
 
 SqlGeneratorBase::~SqlGeneratorBase()
@@ -247,6 +249,79 @@ QString SqlGeneratorBase::escapeFieldValue(QVariant &field) const
     default:
         return "";
     }
+}
+
+QString SqlGeneratorBase::createWhere(QList<WherePhrase> &wheres)
+{
+    QString whereText = "";
+    foreach (WherePhrase p, wheres) {
+        if(whereText != "")
+            whereText.append(" AND ");
+        whereText.append(p.command(this));
+    }
+    if(whereText != "")
+        whereText.prepend(" WHERE ");
+
+    return whereText;
+}
+
+QString SqlGeneratorBase::selectCommand(QList<WherePhrase> &wheres, QHash<QString, QString> &orders, QString tableName, QString joinClassName)
+{
+    QString orderText = "";
+    QStringList orderby;
+
+    QString whereText = createWhere(wheres);
+
+    QString tableNameText = tableName;
+    if(!joinClassName.isNull()){
+        QString joinTableName = _database->tableName(joinClassName);
+        RelationModel *rel = _database->model().relationByTableNames(tableName, joinTableName);
+        if(rel){
+            QString pk = _database->model().model(tableName)->primaryKey();
+            tableNameText  = QString("%1 INNER JOIN %2 ON (%1.%3 = %2.%4)")
+                    .arg(tableName)
+                    .arg(joinTableName)
+                    .arg(pk)
+                    .arg(rel->localColumn);
+            orderby.append(tableName + "." + pk);
+        }else{
+            qWarning(QString("Relation between table %1 and class %2 (%3) not exists!")
+                     .arg(tableName)
+                     .arg(joinClassName)
+                     .arg(joinTableName.isNull() ? "NULL" : joinTableName)
+                     .toLatin1().data());
+            joinClassName = QString::null;
+        }
+    }
+
+    if(orders.count())
+        foreach (QString o, orders.keys())
+//            orderby.append(o + (orders.value(o) ? " ASC" : " DESC"));
+            orderby.append(o + " " + orders.value(o));
+
+    if(orderby.count())
+        orderText = " ORDER BY " + orderby.join(", ");
+
+    QString command = "SELECT * FROM "
+            + tableNameText
+            + whereText
+            + orderText;
+
+    for(int i = 0; i < _database->model().count(); i++)
+        command = command.replace(_database->model().at(i)->className() + "." , _database->model().at(i)->name() + ".");
+    return command;
+
+}
+
+QString SqlGeneratorBase::deleteCommand(QList<WherePhrase> &wheres, QString tableName)
+{
+    QString command = "DELETE FROM "
+            + tableName
+            + createWhere(wheres);
+
+    for(int i = 0; i < _database->model().count(); i++)
+        command = command.replace(_database->model().at(i)->className() + "." , _database->model().at(i)->name() + ".");
+    return command;
 }
 
 

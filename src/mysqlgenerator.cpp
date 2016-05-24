@@ -23,7 +23,7 @@
 
 QT_BEGIN_NAMESPACE
 
-MySqlGenerator::MySqlGenerator(QObject *parent) : SqlGeneratorBase(parent)
+MySqlGenerator::MySqlGenerator(Database *parent) : SqlGeneratorBase(parent)
 {
 
 }

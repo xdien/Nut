@@ -79,10 +79,10 @@ public:                                                                     \
     private:                                                                \
         TableSet<type> *m_##n;                                              \
     public:                                                                 \
-        /*static type ## Field() const{                                       \
-            static type t;                                                  \
-            return t;                                                       \
-        }*/                                                                   \
+        static type *n##Table(){                                             \
+            static type *f = new type();                                    \
+            return f;                                                      \
+        }                                                                   \
         TableSet<type> *n(){                                                \
             return m_##n;                                                   \
         }

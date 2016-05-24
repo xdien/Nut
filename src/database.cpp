@@ -333,11 +333,11 @@ bool Database::open()
     Q_D(Database);
 
     if(d->driver == "QPSQL" || d->driver == "QPSQL7")
-        d->sqlGenertor = new PostgreSqlGenerator;
+        d->sqlGenertor = new PostgreSqlGenerator(this);
     else if (d->driver == "QMYSQL" || d->driver == "QMYSQL3")
-        d->sqlGenertor = new MySqlGenerator;
+        d->sqlGenertor = new MySqlGenerator(this);
     else if (d->driver == "QSQLITE" || d->driver == "QSQLITE3")
-        d->sqlGenertor = new SqliteGenerator;
+        d->sqlGenertor = new SqliteGenerator(this);
     else if(d->driver == "QODBC" || d->driver == "QODBC3"){
         QString driverName = QString::null;
         QStringList parts = d->databaseName.toLower().split(';');
@@ -346,7 +346,7 @@ bool Database::open()
                 driverName = p.split('=').at(1);
 
         if(driverName == "{sql server}")
-            d->sqlGenertor = new SqlServerGenerator;
+            d->sqlGenertor = new SqlServerGenerator(this);
     }
 
     if(!d->sqlGenertor){

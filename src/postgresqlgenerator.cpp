@@ -24,7 +24,7 @@
 
 QT_BEGIN_NAMESPACE
 
-PostgreSqlGenerator::PostgreSqlGenerator(QObject *parent) : SqlGeneratorBase (parent)
+PostgreSqlGenerator::PostgreSqlGenerator(Database *parent) : SqlGeneratorBase (parent)
 {
 
 }
