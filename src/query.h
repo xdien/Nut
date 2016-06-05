@@ -26,6 +26,7 @@
 #include <QtCore/QScopedPointer>
 #include <QtCore/QRegularExpression>
 
+#include "query_p.h"
 #include "database.h"
 #include "databasemodel.h"
 #include "tablesetbase_p.h"
@@ -38,74 +39,87 @@ QT_BEGIN_NAMESPACE
 template<class T>
 class NUT_EXPORT Query : public QueryBase
 {
-    QString _tableName;
-    QString _select;
-//    QString _where;
-    Database *_database;
-    TableSetBase *_tableSet;
-    QString _joinClassName;
-    QList<WherePhrase> _wheres;
+    QueryPrivate *d_ptr;
+    Q_DECLARE_PRIVATE(Query)
+
 public:
     Query(Database *database, TableSetBase *tableSet);
-
-    Query(TableSet<T> *tset){
-        _database = tset->database();
-        _tableName = _database->tableName(T::staticMetaObject.className());
-    }
+    ~Query();
 
     QList<T *> toList(int count = -1);
-    T *first();
-    int count();
     int remove();
+    T *first();
+
+    int count();
+
+    QVariant max(FieldPhrase &f);
+    QVariant min(FieldPhrase &f);
+    QVariant average(FieldPhrase &f){
+        //TODO: ...
+        return QVariant();
+    }
 
     Query<T> *join(const QString &tableName);
     Query<T> *setWhere(WherePhrase where);
+
+    Query<T> *join(Table *c){
+        join(c->metaObject()->className());
+        return this;
+    }
+
 //    Query<T> *setWhere(const QString &where);
     Query<T> *orderBy(QString fieldName, QString type);
-
-private:
-    static QHash<QString, QString> _compiledCommands;
-    QString compileCommand(QString command);
-    QString queryText();
-    QHash<QString, QString> _orders;
+    Query<T> *orderBy(WherePhrase phrase);
 };
-
-//template <typename T>
-//inline Query<T> createQuery(TableSet<T> *tset)
-//{
-//    return Query<T>(tset);
-//}
-
-template<class T>
-QHash<QString, QString>  Query<T>::_compiledCommands;
 
 template<class T>
 Q_OUTOFLINE_TEMPLATE Query<T>::Query(Database *database, TableSetBase *tableSet) : QueryBase(database),
-    _database(database), _tableSet(tableSet), _joinClassName(QString::null)
+    d_ptr(new QueryPrivate(this))
 {
-    _tableName = _database->tableName(T::staticMetaObject.className());
+    Q_D(Query);
+
+    d->database = database;
+    d->tableSet = tableSet;
+    d->tableName = d->database->tableName(T::staticMetaObject.className());
+}
+
+template<class T>
+Q_OUTOFLINE_TEMPLATE Query<T>::~Query()
+{
+    qDebug() << "Query::~Query()";
+    Q_D(Query);
+    delete d;
 }
 
 template<class T>
 Q_OUTOFLINE_TEMPLATE QList<T *> Query<T>::toList(int count)
 {
+    Q_D(Query);
     QList<T*> result;
-    _select = "*";
-    qDebug()<<queryText();
-    QSqlQuery q = _database->exec(_database->sqlGenertor()->selectCommand(_wheres, _orders, _tableName, _joinClassName));
+    d->select = "*";
 
-    QString pk =_database->model().model(_tableName)->primaryKey();
+//    QSqlQuery q = d->database->exec(d->database->sqlGenertor()->selectCommand(d->wheres, d->orders, d->tableName, d->joinClassName));
+    QSqlQuery q = d->database->exec(d->database->sqlGenertor()->selectCommand(
+                                        SqlGeneratorBase::SelectALl,
+                                        "",
+                                        d->wheres,
+                                        d->orderPhrases,
+                                        d->tableName,
+                                        d->joinClassName));
+
+    QString pk =d->database->model().model(d->tableName)->primaryKey();
     QVariant lastPkValue = QVariant();
     int childTypeId = 0;
     T *lastRow = 0;
     TableSetBase *childTableSet;
-    QStringList masterFields = _database->model().model(_tableName)->fieldsNames();
+    QStringList masterFields = d->database->model().model(d->tableName)->fieldsNames();
     QStringList childFields;
-    if(!_joinClassName.isNull()){
-        childFields = _database->model().modelByClass(_joinClassName)->fieldsNames();
-        QString joinTableName = _database->tableName(_joinClassName);
-        childTypeId = _database->model().model(joinTableName)->typeId();
-    }
+    if(!d->joinClassName.isNull())
+        if(d->database->model().modelByClass(d->joinClassName)){
+            childFields = d->database->model().modelByClass(d->joinClassName)->fieldsNames();
+            QString joinTableName = d->database->tableName(d->joinClassName);
+            childTypeId = d->database->model().model(joinTableName)->typeId();
+        }
 
     while (q.next()) {
         if(lastPkValue != q.value(pk)){
@@ -114,7 +128,7 @@ Q_OUTOFLINE_TEMPLATE QList<T *> Query<T>::toList(int count)
             foreach (QString field, masterFields)
                 t->setProperty(field.toLatin1().data(), q.value(field));
 
-            t->setTableSet(_tableSet);
+            t->setTableSet(d->tableSet);
             t->setStatus(Table::FeatchedFromDB);
             t->setParent(this);
 
@@ -124,7 +138,7 @@ Q_OUTOFLINE_TEMPLATE QList<T *> Query<T>::toList(int count)
             if(childTypeId){
                 QSet<TableSetBase*> tableSets = t->tableSets;
                 foreach (TableSetBase *ts, tableSets)
-                    if(ts->childClassName() == _joinClassName)
+                    if(ts->childClassName() == d->joinClassName)
                         childTableSet = ts;
             }
         }
@@ -166,8 +180,33 @@ Q_OUTOFLINE_TEMPLATE T *Query<T>::first()
 template<class T>
 Q_OUTOFLINE_TEMPLATE int Query<T>::count()
 {
-    _select = "COUNT(*)";
-    QSqlQuery q = _database->exec(queryText());
+    Q_D(Query);
+
+    d->select = "COUNT(*)";
+    QSqlQuery q = d->database->exec(d->database->sqlGenertor()->selectCommand("COUNT(*)", d->wheres, d->orders, d->tableName, d->joinClassName));
+
+    if(q.next())
+        return q.value(0).toInt();
+    return 0;
+}
+
+template<class T>
+Q_OUTOFLINE_TEMPLATE QVariant Query<T>::max(FieldPhrase &f){
+    Q_D(Query);
+
+    QSqlQuery q = d->database->exec(d->database->sqlGenertor()->selectCommand("MAX(" + f.data()->text + ")", d->wheres, d->orders, d->tableName, d->joinClassName));
+
+    if(q.next())
+        return q.value(0).toInt();
+    return 0;
+}
+
+template<class T>
+Q_OUTOFLINE_TEMPLATE QVariant Query<T>::min(FieldPhrase &f){
+    Q_D(Query);
+
+    QSqlQuery q = d->database->exec(d->database->sqlGenertor()->selectCommand("MIN(" + f.data()->text + ")", d->wheres, d->orders, d->tableName, d->joinClassName));
+
     if(q.next())
         return q.value(0).toInt();
     return 0;
@@ -176,119 +215,45 @@ Q_OUTOFLINE_TEMPLATE int Query<T>::count()
 template<class T>
 Q_OUTOFLINE_TEMPLATE int Query<T>::remove()
 {
-    QString sql = _database->sqlGenertor()->deleteCommand(_wheres, _tableName);
-//            _database->sqlGenertor()->deleteRecords(_tableName, queryText());
+    Q_D(Query);
+
+    QString sql = d->database->sqlGenertor()->deleteCommand(d->wheres, d->tableName);
+//            d->_database->sqlGenertor()->deleteRecords(_tableName, queryText());
 //    sql = compileCommand(sql);
-    QSqlQuery q = _database->exec(sql);
+    QSqlQuery q = d->database->exec(sql);
     return q.numRowsAffected();
 }
 
 template<class T>
 Q_OUTOFLINE_TEMPLATE Query<T> *Query<T>::join(const QString &tableName)
 {
-    _joinClassName = tableName;
+    Q_D(Query);
+    d->joinClassName = tableName;
     return this;
 }
 
 template<class T>
 Q_OUTOFLINE_TEMPLATE Query<T> *Query<T>::setWhere(WherePhrase where)
 {
-    _wheres.append(where);
+    Q_D(Query);
+    d->wheres.append(where);
     return this;
 }
-
-//template<class T>
-//Q_OUTOFLINE_TEMPLATE Query<T> *Query<T>::setWhere(const QString &where)
-//{
-//    _where = where;
-//    return this;
-//}
 
 template<class T>
 Q_OUTOFLINE_TEMPLATE Query<T> *Query<T>::orderBy(QString fieldName, QString type)
 {
-    _orders.insert(fieldName, type);
+    Q_D(Query);
+    d->orders.insert(fieldName, type);
     return this;
 }
 
 template<class T>
-Q_OUTOFLINE_TEMPLATE QString Query<T>::compileCommand(QString command)
+Q_OUTOFLINE_TEMPLATE Query<T> *Query<T>::orderBy(WherePhrase phrase)
 {
-    if(!_compiledCommands.contains(command)){
-        QString q = command
-                        .replace("::", ".")
-                        .replace("()", "")
-                        .replace("==", "=")
-                        .replace("!=", "<>");
-
-        QRegularExpression r("(\\w+)\\.(\\w+)");
-        QRegularExpressionMatchIterator i = r.globalMatch(command);
-        while (i.hasNext()) {
-            QRegularExpressionMatch match = i.next();
-            QString tableName = match.captured(1);
-            QString fieldName = match.captured(2);
-            tableName = _database->tableName(tableName);
-            q = command.replace(match.captured(), tableName + "." + fieldName);
-        }
-        _compiledCommands.insert(command, q);
-    }
-
-    return _compiledCommands[command];
-}
-
-template<class T>
-Q_OUTOFLINE_TEMPLATE QString Query<T>::queryText()
-{
-    QStringList orderby;
-    QString q = "";//compileCommand(_where);
-    foreach (WherePhrase p, _wheres) {
-        if(q != "")
-            q.append(" AND ");
-        q.append(p.command(_database->sqlGenertor()));
-    }
-
-    QString t = _tableName;
-    if(!_joinClassName.isNull()){
-        QString joinTableName = _database->tableName(_joinClassName);
-        RelationModel *rel = _database->model().relationByTableNames(_tableName, joinTableName);
-        if(rel){
-            QString pk = _database->model().model(_tableName)->primaryKey();
-            t = QString("%1 INNER JOIN %2 ON (%1.%3 = %2.%4)")
-                    .arg(_tableName)
-                    .arg(joinTableName)
-                    .arg(pk)
-                    .arg(rel->localColumn);
-            orderby.append(_tableName + "." + pk);
-        }else{
-            qWarning(QString("Relation between table %1 and class %2 (%3) not exists!")
-                     .arg(_tableName)
-                     .arg(_joinClassName)
-                     .arg(joinTableName.isNull() ? "NULL" : joinTableName)
-                     .toLatin1().data());
-            _joinClassName = QString::null;
-        }
-    }
-
-    QString orderText = "";
-    if(_orders.count())
-        foreach (QString o, _orders.keys())
-            orderby.append(o + " " + _orders.value(o));
-
-    if(orderby.count())
-        orderText = " ORDER BY " + orderby.join(", ");
-
-    QString command = QString("SELECT %1 FROM %2 %3%4")
-            .arg(_select)
-            .arg(t)
-            .arg(q.isEmpty() ? "" : "WHERE " + q)
-            .arg(orderText);
-
-    for(int i = 0; i < _database->model().count(); i++)
-        command = command.replace(_database->model().at(i)->className() + "." , _database->model().at(i)->name() + ".");
-
-    qDebug() << command
-             << _database->sqlGenertor()->selectCommand(_wheres, _orders, _tableName, _joinClassName);
-    return command;
+    Q_D(Query);
+    d->orderPhrases.append(phrase);
+    return this;
 }
 
 QT_END_NAMESPACE

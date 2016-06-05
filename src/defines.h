@@ -33,10 +33,10 @@
 #endif
 
 // Database
-#define NUT_DB_VERSION(major, minor) Q_CLASSINFO(__nut_NAME_PERFIX __nut_DB_VERSION, #major "." #minor)
+#define NUT_DB_VERSION(major, minor) Q_CLASSINFO(QT_STRINGIFY(__nut_NAME_PERFIX __nut_DB_VERSION), QT_STRINGIFY(#major "." #minor))
 
 #define NUT_DECLARE_TABLE(type, name)                                       \
-    Q_CLASSINFO(__nut_NAME_PERFIX __nut_TABLE " "  #type, #name)                              \
+    Q_CLASSINFO(QT_STRINGIFY(__nut_NAME_PERFIX __nut_TABLE " "  #type), #name)                              \
     Q_PROPERTY(type* name READ name)                                        \
     Q_PROPERTY(TableSet<type> name##s READ name##s)                         \
     type* m_##name;                                                         \
@@ -49,7 +49,7 @@ public:                                                                     \
 //Table
 #define NUT_DECLARE_FIELD(type, name, read, write)                          \
     Q_PROPERTY(type name READ read WRITE write)                             \
-    Q_CLASSINFO(__nut_NAME_PERFIX #name " " __nut_FIELD, #name)             \
+    Q_CLASSINFO(QT_STRINGIFY(__nut_NAME_PERFIX #name " " __nut_FIELD), #name)             \
     type m_##name;                                                          \
 public:                                                                     \
     static FieldPhrase name##Field(){                                       \
@@ -67,7 +67,7 @@ public:                                                                     \
 #define NUT_FOREGION_KEY(type, keytype, name, read, write)                  \
     Q_PROPERTY(type* name READ read WRITE write)                            \
     NUT_DECLARE_FIELD(keytype, name##Id, read##Id, write##Id)               \
-    Q_CLASSINFO(__nut_NAME_PERFIX #name "Id " __nut_FOREGION_KEY, #type)    \
+    Q_CLASSINFO(QT_STRINGIFY(__nut_NAME_PERFIX #name "Id " __nut_FOREGION_KEY), #type)    \
     type *m_##name;                                                         \
 public:                                                                     \
     type *read() const { return m_##name ; }                                \
@@ -89,14 +89,14 @@ public:                                                                     \
 
 
 #define NUT_INDEX(name, field, order)
-#define NUT_PRIMARY_KEY(x)                  Q_CLASSINFO(__nut_NAME_PERFIX #x " " __nut_PRIMARY_KEY,  #x)
-#define NUT_AUTO_INCREMENT(x)               Q_CLASSINFO(__nut_NAME_PERFIX #x " " __nut_AUTO_INCREMENT,  #x)
+#define NUT_PRIMARY_KEY(x)                  Q_CLASSINFO(QT_STRINGIFY(__nut_NAME_PERFIX #x " " __nut_PRIMARY_KEY),  #x)
+#define NUT_AUTO_INCREMENT(x)               Q_CLASSINFO(QT_STRINGIFY(__nut_NAME_PERFIX #x " " __nut_AUTO_INCREMENT),  #x)
 #define NUT_PRIMARY_AUTO_INCREMENT(x)       NUT_PRIMARY_KEY(x)          \
                                             NUT_AUTO_INCREMENT(x)
-#define NUT_UNIQUE(x)                       Q_CLASSINFO(__nut_NAME_PERFIX #x " " __nut_UNIQUE,  #x)
-#define NUT_LEN(x, n)                       Q_CLASSINFO(__nut_NAME_PERFIX #x " " __nut_LEN,    #n)
-#define NUT_DEFAULT_VALUE(x, n)             Q_CLASSINFO(__nut_NAME_PERFIX #x " " __nut_DEFAULT_VALUE,    #n)
-#define NUT_NOT_NULL(x)                     Q_CLASSINFO(__nut_NAME_PERFIX #x " " __nut_NOT_NULL, "1")
+#define NUT_UNIQUE(x)                       Q_CLASSINFO(QT_STRINGIFY(__nut_NAME_PERFIX #x " " __nut_UNIQUE),  #x)
+#define NUT_LEN(x, n)                       Q_CLASSINFO(QT_STRINGIFY(__nut_NAME_PERFIX #x " " __nut_LEN),    #n)
+#define NUT_DEFAULT_VALUE(x, n)             Q_CLASSINFO(QT_STRINGIFY(__nut_NAME_PERFIX #x " " __nut_DEFAULT_VALUE),    #n)
+#define NUT_NOT_NULL(x)                     Q_CLASSINFO(QT_STRINGIFY(__nut_NAME_PERFIX #x " " __nut_NOT_NULL), "1")
 
 #ifndef NUT_NO_KEYWORDS
 #   define FROM(x)          /*QScopedPointer<QueryBase*>*/(x->createQuery())
@@ -110,5 +110,7 @@ public:                                                                     \
 #   define DELETE()         ->remove()
 #   define FIRST()          ->first()
 #endif // NUT_NO_KEYWORDS
+
+
 
 #endif // SYNTAX_DEFINES_H

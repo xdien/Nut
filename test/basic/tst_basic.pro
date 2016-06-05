@@ -16,6 +16,7 @@ SOURCES += \
 
 HEADERS += \
     maintest.h \
+    ../common/consts.h \
     ../common/comment.h \
     ../common/post.h \
     ../common/weblogdatabase.h

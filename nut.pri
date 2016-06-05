@@ -20,7 +20,8 @@ HEADERS += \
     $$PWD/src/sqlitegenerator.h \
     $$PWD/src/tablemodel.h \
     $$PWD/src/sqlservergenerator.h \
-    $$PWD/src/wherephrase.h
+    $$PWD/src/wherephrase.h \
+    $$PWD/src/query_p.h
 
 SOURCES += \
     $$PWD/src/database.cpp \

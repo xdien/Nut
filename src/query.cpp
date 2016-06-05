@@ -1,4 +1,4 @@
-/**************************************************************************
+/*!************************************************************************
 **
 ** This file is part of Nut project.
 ** https://github.com/HamedMasafi/Nut
@@ -20,4 +20,48 @@
 
 #include "query.h"
 
+QT_BEGIN_NAMESPACE
 
+QueryPrivate::QueryPrivate(QueryBase *parent) : q_ptr(parent),
+     joinClassName(QString::null)
+{
+
+}
+
+/*!
+  * \class Query
+  * \brief This class hold a query. A query can be used for getting database rows, editing or deleting without row fetching.
+  */
+
+/*!
+ * \brief toList
+ * \param count Total rows must be returned
+ * \return This function return class itself
+ * This function return rows
+ */
+
+/*!
+ * \brief setWhere
+ * \param where Where phrase
+ * \return This function return class itself
+ */
+
+/*!
+ * \brief orderBy
+ * \param phrase Order phrase
+ * \return This function return class itself
+ *  orderBy set a new order for this query. Order can be a hrase like that:
+ * \code
+ * query->orderBy(Post::idField());
+ * \endcode
+ * If you need more than one order field seprate them by & operator, example:
+ * \code
+ * query->orderBy(Post::idField() & Post::bodyField());
+ * \endcode
+ * Order can be also DESC, for that put exclamation mark near field
+ * \code
+ * query->orderBy(!Post::idField & Post::bodyField());
+ * \endcode
+ */
+
+QT_END_NAMESPACE

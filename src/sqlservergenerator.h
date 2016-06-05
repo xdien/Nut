@@ -35,6 +35,8 @@ public:
 
     QString fieldType(FieldModel *field);
     QString diff(FieldModel *oldField, FieldModel *newField);
+
+    QString escapeValue(const QVariant &v) const;
 };
 
 QT_END_NAMESPACE

@@ -33,6 +33,11 @@ void MainTest::initTestCase()
     bool ok = db.open();
 
     QTEST_ASSERT(ok);
+
+    FROM(db.comments())
+            DELETE();
+    FROM(db.posts())
+            DELETE();
 }
 
 void MainTest::dataScheema()
@@ -67,13 +72,36 @@ void MainTest::createPost()
     qDebug() << "New post inserted with id:" << newPost->id();
 }
 
+void MainTest::createPost2()
+{
+    Post *newPost = new Post;
+    newPost->setTitle("post title");
+    newPost->setSaveDate(QDateTime::currentDateTime());
+
+    db.posts()->append(newPost);
+    db.saveChanges();
+
+    for(int i = 0 ; i < 3; i++){
+        Comment *comment = new Comment;
+        comment->setMessage("comment #" + QString::number(i));
+        comment->setSaveDate(QDateTime::currentDateTime());
+        comment->setPostId(newPost->id());
+        db.comments()->append(comment);
+    }
+    db.saveChanges();
+
+    QTEST_ASSERT(newPost->id() != 0);
+    qDebug() << "New post2 inserted with id:" << newPost->id();
+}
+
 void MainTest::selectPosts()
 {
 //    auto q = FROM(db.posts())
 //        JOIN(Comment)
 //        WHERE(Post::idField() == postId);
     auto q = db.posts()->createQuery();
-    q->join("Comment");
+    q->join(Post::commentsTable());
+    q->orderBy(!Post::saveDateField() & Post::bodyField());
     q->setWhere(Post::idField() == postId);
 
     auto posts = q->toList();
@@ -89,6 +117,15 @@ void MainTest::selectPosts()
     QTEST_ASSERT(posts.at(0)->comments()->at(1)->message() == "comment #1");
     QTEST_ASSERT(posts.at(0)->comments()->at(2)->message() == "comment #2");
     db.cleanUp();
+}
+
+void MainTest::selectPostsWithoutTitle()
+{
+    auto q = db.posts()->createQuery();
+    q->setWhere(Post::titleField().isNull());
+    auto count = q->count();
+    qDebug() << "selectPostsWithoutTitle, count=" << count;
+    QTEST_ASSERT(count == 0);
 }
 
 void MainTest::testDate()
@@ -116,15 +153,22 @@ void MainTest::testDate()
 
 void MainTest::selectWithInvalidRelation()
 {
-    auto q = FROM(db.posts())
-            JOIN(Invalid_Class_Name)
-            SELECT();
+    auto q = db.posts()->createQuery();
+    q->join("Invalid_Class_Name");
+    q->toList();
+}
+
+void MainTest::select10NewstPosts()
+{
+    auto q = db.posts()->createQuery();
+    q->orderBy(!Post::saveDateField());
+    q->toList(10);
 }
 
 void MainTest::modifyPost()
 {
-    auto q = FROM(db.posts())
-            WHERE(Post::idField() == postId);
+    auto q = db.posts()->createQuery();
+    q->setWhere(Post::idField() == postId);
 
     Post *post = q->first();
 

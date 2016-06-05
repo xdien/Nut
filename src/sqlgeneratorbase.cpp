@@ -28,6 +28,7 @@
 #include "sqlgeneratorbase_p.h"
 #include "table.h"
 #include "tablemodel.h"
+#include "wherephrase.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -174,9 +175,16 @@ QString SqlGeneratorBase::insertRecord(Table *t, QString tableName)
         if(f != key)
             values.append("'" + t->property(f.toLatin1().data()).toString() + "'");
 
+    QString changedPropertiesText = "";
+    QSet<QString> props = t->changedProperties();
+    foreach (QString s, props) {
+        if(changedPropertiesText != "")
+            changedPropertiesText.append(", ");
+        changedPropertiesText.append(s);
+    }
     sql = QString("INSERT INTO %1 (%2) VALUES (%3)")
             .arg(tableName)
-            .arg(t->changedProperties().toList().join(", "))
+            .arg(changedPropertiesText)
             .arg(values.join(", "));
 
     return sql;
@@ -208,6 +216,61 @@ QString SqlGeneratorBase::deleteRecord(Table *t, QString tableName)
             .arg(t->primaryValue().toString());
 }
 
+QString SqlGeneratorBase::agregateText(const AgregateType &t, const QString &arg) const
+{
+    switch (t) {
+    case SelectALl:
+        return "*";
+        break;
+
+    case Min:
+        return "MIN(" + arg + ")";
+        break;
+
+    case Max:
+        return "MAX(" + arg + ")";
+        break;
+
+    case Average:
+        return "AVERAGE(" + arg + ")";
+        break;
+
+    case Count:
+        return "COUNT(" + arg + ")";
+        break;
+
+    default:
+        return QString::null;
+    }
+}
+
+QString SqlGeneratorBase::fromTableText(const QString &tableName, QString &joinClassName, QString &orderBy) const
+{
+    QString tableNameText = tableName;
+    if(!joinClassName.isNull()){
+        QString joinTableName = _database->tableName(joinClassName);
+        RelationModel *rel = _database->model().relationByTableNames(tableName, joinTableName);
+        if(rel){
+            QString pk = _database->model().model(tableName)->primaryKey();
+            tableNameText  = QString("%1 INNER JOIN %2 ON (%1.%3 = %2.%4)")
+                    .arg(tableName)
+                    .arg(joinTableName)
+                    .arg(pk)
+                    .arg(rel->localColumn);
+            orderBy = tableName + "." + pk;
+        }else{
+            qWarning(QString("Relation between table %1 and class %2 (%3) not exists!")
+                     .arg(tableName)
+                     .arg(joinClassName)
+                     .arg(joinTableName.isNull() ? "NULL" : joinTableName)
+                     .toLatin1().data());
+            joinClassName = QString::null;
+        }
+    }
+
+    return tableNameText;
+}
+
 QString SqlGeneratorBase::deleteRecords(QString tableName, QString where)
 {
     QString sql = "";
@@ -218,59 +281,69 @@ QString SqlGeneratorBase::deleteRecords(QString tableName, QString where)
     return sql;
 }
 
-QString SqlGeneratorBase::escapeFieldValue(QVariant &field) const
+QString SqlGeneratorBase::selectCommand(SqlGeneratorBase::AgregateType t, QString agregateArg, QList<WherePhrase> &wheres, QList<WherePhrase> &orders, QString tableName, QString joinClassName)
 {
-    switch (field.type()) {
-    case QVariant::Int:
-    case QVariant::Double:
-        return field.toString();
-        break;
+    QString select = agregateText(t, agregateArg);
+    QString where = createWhere(wheres);
+    QString order = "";
+    QString from = fromTableText(tableName, joinClassName, order);
 
-    case QVariant::String:
-        return "'" + field.toString() + "'";
-
-    case QVariant::DateTime:
-        return "'" + field.toDateTime().toString(Qt::ISODate)  + "'";
-
-    case QVariant::Date:
-        return "'" + field.toDate().toString(Qt::ISODate) + "'";
-
-    case QVariant::Time:
-        return "'" + field.toTime().toString(Qt::ISODate) + "'";
-
-    case QVariant::StringList:
-    case QVariant::List:
-        return "['" + field.toStringList().join("', '") + "']";
-
-    case QVariant::Invalid:
-        qFatal("Invalud field value");
-        return "<Invalid>";
-
-    default:
-        return "";
+    foreach(WherePhrase p, orders){
+        if(order != "")
+            order.append(", ");
+        order.append(phraseOrder(p.data()));
     }
+
+    QString sql = "SELECT " + select + " FROM " + from;
+
+    if(where != "")
+        sql.append(" WHERE " + where);
+
+    if(order != "")
+        sql.append(" ORDER BY " + order);
+
+    for(int i = 0; i < _database->model().count(); i++)
+        sql = sql.replace(_database->model().at(i)->className() + "." , _database->model().at(i)->name() + ".");
+
+    qDebug() << "new sql" << sql;
+    return sql;
+}
+
+QString SqlGeneratorBase::selectCommand(QList<WherePhrase> &wheres, QHash<QString, QString> &orders, QString tableName, QString joinClassName)
+{
+    return selectCommand("*", wheres, orders, tableName, joinClassName);
 }
 
 QString SqlGeneratorBase::createWhere(QList<WherePhrase> &wheres)
 {
     QString whereText = "";
-    foreach (WherePhrase p, wheres) {
+//    for (int i = 0; i < wheres.count(); i++) {
+//        if(whereText != "")
+//            whereText.append(" AND ");
+//        whereText.append(phrase(wheres[i].data()));
+//    }
+    foreach (WherePhrase w, wheres) {
         if(whereText != "")
             whereText.append(" AND ");
-        whereText.append(p.command(this));
+
+        whereText.append(phrase(w.data()));
     }
-    if(whereText != "")
-        whereText.prepend(" WHERE ");
+qDebug() << "WHWRE="<< whereText;
+//    if(whereText != "")
+//        whereText.prepend(" WHERE ");
 
     return whereText;
 }
 
-QString SqlGeneratorBase::selectCommand(QList<WherePhrase> &wheres, QHash<QString, QString> &orders, QString tableName, QString joinClassName)
+QString SqlGeneratorBase::selectCommand(QString selectPhrase, QList<WherePhrase> &wheres, QHash<QString, QString> &orders, QString tableName, QString joinClassName)
 {
     QString orderText = "";
     QStringList orderby;
 
     QString whereText = createWhere(wheres);
+
+    if(whereText != "")
+        whereText.prepend(" WHERE ");
 
     QString tableNameText = tableName;
     if(!joinClassName.isNull()){
@@ -302,26 +375,183 @@ QString SqlGeneratorBase::selectCommand(QList<WherePhrase> &wheres, QHash<QStrin
     if(orderby.count())
         orderText = " ORDER BY " + orderby.join(", ");
 
-    QString command = "SELECT * FROM "
+    QString command = "SELECT "
+            +selectPhrase
+            + " FROM "
             + tableNameText
             + whereText
             + orderText;
 
     for(int i = 0; i < _database->model().count(); i++)
         command = command.replace(_database->model().at(i)->className() + "." , _database->model().at(i)->name() + ".");
+
+    qDebug() << command;
     return command;
 
 }
 
 QString SqlGeneratorBase::deleteCommand(QList<WherePhrase> &wheres, QString tableName)
 {
-    QString command = "DELETE FROM "
-            + tableName
-            + createWhere(wheres);
+    QString command = "DELETE FROM " + tableName;
+    QString where = createWhere(wheres);
+
+    if(where != "")
+        command.append(" WHERE " + where);
 
     for(int i = 0; i < _database->model().count(); i++)
         command = command.replace(_database->model().at(i)->className() + "." , _database->model().at(i)->name() + ".");
     return command;
+}
+
+QString SqlGeneratorBase::escapeValue(const QVariant &v)const
+{
+    switch (v.type()) {
+    case QVariant::Int:
+    case QVariant::UInt:
+    case QVariant::ULongLong:
+    case QVariant::LongLong:
+    case QVariant::Double:
+        return v.toString();
+        break;
+
+    case QVariant::Char:
+    case QVariant::String:
+        return "'" + v.toString() + "'";
+
+    case QVariant::DateTime:
+        return "'" + v.toDateTime().toString() + "'";
+
+    case QVariant::Date:
+        return "'" + v.toDate().toString() + "'";
+
+    case QVariant::Time:
+        return "'" + v.toTime().toString() + "'";
+
+    case QVariant::StringList:
+    case QVariant::List:
+        return "['" + v.toStringList().join("', '") + "']";
+
+    case QVariant::Invalid:
+        qFatal("Invalud field value");
+        return "<FAIL>";
+    }
+    return "";
+}
+
+QString SqlGeneratorBase::phraseOrder(const PhraseData *d) const
+{
+
+    QString ret = "";
+
+    switch(d->type){
+    case PhraseData::Field:
+        if(d->operatorCond == PhraseData::Not)
+            ret = d->text + " DESC";
+        else
+            ret = d->text;
+        break;
+
+    case PhraseData::WithOther:
+        if(d->operatorCond != PhraseData::Append)
+            qFatal("Order phease can only have & operator");
+
+        ret = phraseOrder(d->left) + ", " + phraseOrder(d->right);
+        break;
+
+    case PhraseData::WithoutOperand:
+    case PhraseData::WithVariant:
+        break;
+    }
+
+    return ret;
+}
+
+QString SqlGeneratorBase::phrase(const PhraseData *d) const
+{
+    QString ret = "";
+
+    qDebug() << "type"<<d->type;
+    switch(d->type){
+    case PhraseData::Field:
+        ret = d->text;
+        break;
+
+    case PhraseData::WithVariant:
+        ret = phrase(d->left) + " " + operatorString(d->operatorCond) + " " + escapeValue(d->operand);
+        break;
+
+    case PhraseData::WithOther:
+        ret = phrase(d->left) + " " + operatorString(d->operatorCond) + " " + phrase(d->right);
+        break;
+
+    case PhraseData::WithoutOperand:
+        ret = phrase(d->left) + " " + operatorString(d->operatorCond);
+        break;
+
+    default:
+        ret = "<FAIL>";
+    }
+
+    if(d->operatorCond == PhraseData::And || d->operatorCond == PhraseData::Or)
+        ret = "(" + ret + ")";
+
+    return ret;
+}
+
+QString SqlGeneratorBase::operatorString(const PhraseData::Condition &cond) const
+{
+    switch (cond){
+    case PhraseData::Equal:
+        return "=";
+    case PhraseData::NotEqual:
+        return "<>";
+    case PhraseData::Less:
+        return "<";
+    case PhraseData::Greater:
+        return ">";
+    case PhraseData::LessEqual:
+        return "<=";
+    case PhraseData::GreaterEqual:
+        return ">=";
+    case PhraseData::Null:
+        return "IS NULL";
+
+    case PhraseData::NotNull:
+        return "IS NOT NULL";
+
+    case PhraseData::In:
+        return "IN";
+
+    case PhraseData::NotIn:
+        return "NOT IN";
+
+    case PhraseData::And:
+        return "AND";
+    case PhraseData::Or:
+        return "OR";
+
+    case PhraseData::Like:
+        return "LIKE";
+    case PhraseData::NotLike:
+        return "NOT LIKE";
+
+    case PhraseData::Add:
+        return "+";
+    case PhraseData::Minus:
+        return "-";
+    case PhraseData::Multiple:
+        return "*";
+    case PhraseData::Divide:
+        return "/";
+
+    case PhraseData::Set:
+        return "=";
+
+    case PhraseData::Append:
+        return ",";
+    }
+
+    return QString("<FAIL>");
 }
 
 

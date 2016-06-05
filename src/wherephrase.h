@@ -27,21 +27,25 @@
 #include <QDate>
 #include <QDateTime>
 #include <QTime>
+#include <QSharedPointer>
 
 QT_BEGIN_NAMESPACE
 
 class SqlGeneratorBase;
-struct PhraseData{
+class PhraseData{
+public:
     enum Condition
     {
-        Equal = 0,
+        NotAssign = 0,
+        Equal,
         Less,
         LessEqual,
         Null,
         In,
         Like,
 
-        NotEqual = 10,
+        Not = 10,
+        NotEqual,
         GreaterEqual,
         Greater,
         NotNull,
@@ -50,6 +54,7 @@ struct PhraseData{
 
         And = 20,
         Or,
+
 
         Append,
         Set,
@@ -81,33 +86,23 @@ struct PhraseData{
     PhraseData(PhraseData *l, Condition o, QVariant r);
 
     ~PhraseData();
-
-    QString operatorString() const;
-    QString escapeVariant() const;
-    QString command(SqlGeneratorBase *generator) const;
 };
 
 class WherePhrase{
 protected:
-    PhraseData *data;
-    bool willDeleteData;
+    PhraseData *_data;
+    QSharedPointer<PhraseData> _dataPointer;
 
 public:
-
-    QString text;
-
     WherePhrase(const char *className, const char* s);
 
-    WherePhrase(PhraseData *l);
-    WherePhrase(PhraseData *l, PhraseData::Condition o);
-    WherePhrase(PhraseData *l, PhraseData::Condition o, PhraseData *r);
-    WherePhrase(PhraseData *l, PhraseData::Condition o, QVariant r);
+    WherePhrase(const WherePhrase &l);
+    WherePhrase(WherePhrase *l);
+    WherePhrase(WherePhrase *l, PhraseData::Condition o);
+    WherePhrase(WherePhrase *l, PhraseData::Condition o, WherePhrase *r);
+    WherePhrase(WherePhrase *l, PhraseData::Condition o, QVariant r);
 
     ~WherePhrase();
-
-    QString command(SqlGeneratorBase *generator);
-
-    void deleteData(PhraseData *d);
 
     WherePhrase operator ==(const WherePhrase &other);
     WherePhrase operator !=(const WherePhrase &other);
@@ -137,13 +132,12 @@ public:
     WherePhrase operator >=(const QVariant &other);
 
 
+    PhraseData *data() const;
 };
 
 class FieldPhrase: public WherePhrase{
 public:
     FieldPhrase(const char *className, const char* s);
-
-    WherePhrase operator &(const QVariant &other);
 
     WherePhrase operator =(const QVariant &other);
     WherePhrase operator !();
@@ -153,6 +147,13 @@ public:
     WherePhrase in(QStringList list);
     WherePhrase like(QString pattern);
 };
+
+
+//TODO: make FieldPhrase template class
+//template <typename T>
+//class FieldPhrase: public WherePhrase{
+
+//};
 
 QT_END_NAMESPACE
 

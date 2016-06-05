@@ -102,4 +102,12 @@ QString SqlServerGenerator::diff(FieldModel *oldField, FieldModel *newField)
     return sql;
 }
 
+QString SqlServerGenerator::escapeValue(const QVariant &v) const
+{
+    if(v.type() == QVariant::String || v.type() == QVariant::Char)
+        return "N'" + v.toString() + "'";
+    else
+        return SqlGeneratorBase::escapeValue(v);
+}
+
 QT_END_NAMESPACE

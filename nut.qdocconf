@@ -1,0 +1,24 @@
+project                 = Nut
+description             = Advanced, Powerful and easy to use ORM for Qt5
+version                 = 0.1
+
+outputdir   			= doc
+
+source += src/query.cpp
+headerdirs  			+= src
+sourcedirs  			+= src
+exampledirs 			= . 
+
+
+
+qhp.projects = Nut
+
+qhp.qtestclass.file = nut.qhp
+qhp.qtestclass.namespace = org.kaj.nut.0.1
+qhp.qtestclass.virtualFolder = nut
+qhp.qtestclass.indexTitle = nut
+qhp.qtestclass.indexRoot =
+
+qhp.qtestclass.filterAttributes = nut 0.1 qtrefdoc
+qhp.qtestclass.customFilters.Qt.name = qtestclass 0.1
+qhp.qtestclass.customFilters.Qt.filterAttributes = qtestclass 0.1

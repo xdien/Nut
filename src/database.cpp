@@ -65,10 +65,11 @@ bool DatabasePrivate::open()
         qWarning(db.lastError().text().toLocal8Bit().data());
 
         if(db.lastError().text().contains("database \"" + databaseName + "\" does not exist")
-                || db.lastError().text().contains("Cannot open database")){
+                || db.lastError().text().contains("Cannot open database")
+                || db.lastError().text().contains("Unknown database '" + databaseName + "'")){
             db.setDatabaseName(sqlGenertor->masterDatabaseName(databaseName));
             ok = db.open();
-            qInfo("Creating database");
+            qDebug("Creating database");
             if(ok){
                 db.exec("CREATE DATABASE " + databaseName);
                 db.close();
@@ -89,18 +90,20 @@ bool DatabasePrivate::open()
 
 bool DatabasePrivate::updateDatabase()
 {
+    Q_Q(Database);
+
     DatabaseModel last = getLastScheema();
     DatabaseModel current = currentModel;
 
     if(last == current){
-        qInfo("Databse is up-to-date");
+        qDebug("Databse is up-to-date");
         return true;
     }
 
     if(!last.count())
-        qInfo("Databse is new");
+        qDebug("Databse is new");
     else
-        qInfo("Databse is changed");
+        qDebug("Databse is changed");
 
     QStringList sql = sqlGenertor->diff(last, current);
     db.transaction();
@@ -108,13 +111,26 @@ bool DatabasePrivate::updateDatabase()
         qDebug() << "going to exec " << s;
         db.exec(s);
 
-        if(!db.lastError().type() == QSqlError::NoError)
+        if(db.lastError().type() != QSqlError::NoError)
             qWarning(db.lastError().text().toLatin1().data());
     }
     bool ok = db.commit();
 
     if(ok){
         storeScheemaInDB();
+
+        q->databaseUpdated(last.versionMajor(), last.versionMinor(), current.versionMajor(), current.versionMinor());
+        QString versionText = QString::number(current.versionMajor()) + "_" + QString::number(current.versionMinor());
+
+        for(int i = 0; i < q->metaObject()->methodCount(); i++){
+            QMetaMethod m = q->metaObject()->method(i);
+            if(m.name() == "update" + versionText){
+                m.invoke(q, Qt::DirectConnection,
+                         Q_ARG(int, current.versionMajor()),
+                         Q_ARG(int, current.versionMinor()));
+                break;
+            }
+        }
     }else{
         qWarning("Unable update database");
         qWarning(db.lastError().text().toLatin1().data());
@@ -135,12 +151,12 @@ QVariantMap DatabasePrivate::getCurrectScheema()
 
     for(int i = 0; i < q->metaObject()->classInfoCount(); i++){
         QMetaClassInfo ci = q->metaObject()->classInfo(i);
-        QString ciName = QString(ci.name()).replace(__nut_NAME_PERFIX, "");
+        QString ciName = QString(ci.name()).replace(__nut_NAME_PERFIX, "").replace("\"", "");
         if(ciName.startsWith(__nut_TABLE))
-            tables.insert(QString(ci.name()).replace(__nut_NAME_PERFIX, "").split(" ").at(1), ci.value());
+            tables.insert(ciName.split(" ").at(1), ci.value());
 
         if(ciName == __nut_DB_VERSION){
-            QStringList version = QString(ci.value()).split('.');
+            QStringList version = QString(ci.value()).replace("\"", "").split('.');
             bool ok = false;
             if(version.length() == 1){
                 currentModel.setVersionMajor(version.at(0).toInt(&ok));
@@ -150,14 +166,14 @@ QVariantMap DatabasePrivate::getCurrectScheema()
             }
 
             if(!ok)
-                qFatal("NUT_DB_VERSION macro accept version in format 'x' or 'x.y' only, and x[,y] must be integer values\n");
+                qFatal("NUT_DB_VERSION macro accept version in format 'x' or 'x[.y]' only, and x,y must be integer values\n");
         }
     }
 
     QVariantMap databaseVariant;
     for(int i = 1; i < q->metaObject()->propertyCount(); i++){
         QMetaProperty tableProperty = q->metaObject()->property(i);
-        uint typeId = QMetaType::type(tableProperty.typeName());
+        int typeId = QMetaType::type(tableProperty.typeName());
 
         if(tables.values().contains(tableProperty.name()) && typeId >= QVariant::UserType){
             TableModel *sch = new TableModel(typeId, tableProperty.name());
@@ -220,6 +236,12 @@ void DatabasePrivate::createChangeLogs()
     db.exec(diff);
 }
 
+
+/*!
+ * \class Database
+ * \brief Database class
+ */
+
 Database::Database(QObject *parent) : QObject(parent), d_ptr(new DatabasePrivate(this))
 {
     Q_D(Database);
@@ -268,6 +290,10 @@ QString Database::driver() const
     return d->driver;
 }
 
+/*!
+ * \brief Database::model
+ * \return The model of this database
+ */
 DatabaseModel Database::model() const
 {
     Q_D(const Database);
@@ -328,6 +354,14 @@ SqlGeneratorBase *Database::sqlGenertor() const
     return d->sqlGenertor;
 }
 
+void Database::databaseUpdated(int oldMajor, int oldMinor, int newMajor, int newMinor)
+{
+    Q_UNUSED(oldMajor);
+    Q_UNUSED(oldMinor);
+    Q_UNUSED(newMajor);
+    Q_UNUSED(newMinor);
+}
+
 bool Database::open()
 {
     Q_D(Database);
@@ -357,9 +391,16 @@ bool Database::open()
     }
 }
 
+void Database::close()
+{
+    Q_D(Database);
+    d->db.close();
+}
+
 QSqlQuery Database::exec(QString sql)
 {
     Q_D(Database);
+    qDebug() <<sql;
     QSqlQuery q = d->db.exec(sql);
     if(d->db.lastError().type() != QSqlError::NoError)
         qWarning(d->db.lastError().text().toLatin1().data());

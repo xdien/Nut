@@ -45,6 +45,7 @@ public:
     Database(QObject *parent = 0);
 
     bool open();
+    void close();
 
     QSqlQuery exec(QString sql);
 
@@ -64,6 +65,9 @@ public:
     QString tableName(QString className);
 
     SqlGeneratorBase *sqlGenertor() const;
+
+protected:
+    virtual void databaseUpdated(int oldMajor, int oldMinor, int newMajor, int newMinor);
 
 public slots:
     void setDatabaseName(QString databaseName);

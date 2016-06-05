@@ -22,9 +22,12 @@ private slots:
 
     void dataScheema();
     void createPost();
+    void createPost2();
     void selectPosts();
+    void selectPostsWithoutTitle();
     void testDate();
     void selectWithInvalidRelation();
+    void select10NewstPosts();
     void modifyPost();
     void deletePost();
 };

@@ -148,6 +148,7 @@ TableModel::TableModel(int typeId, QString tableName)
     // get fields names
     for(int j = 0; j < tableMetaObject->classInfoCount(); j++){
         QString name = tableMetaObject->classInfo(j).name();
+        name = name.replace("\"", "");
 
         name = name.remove(__nut_NAME_PERFIX);
 
@@ -181,8 +182,8 @@ TableModel::TableModel(int typeId, QString tableName)
         QString name = tableMetaObject->classInfo(j).name();
         QString value = tableMetaObject->classInfo(j).value();
 
-        name = name.remove(__nut_NAME_PERFIX);
-
+        name = name.replace("\"", "").remove(__nut_NAME_PERFIX);
+        value = value.replace("\"", "");
 
         if(name.contains(" ")){
             QStringList parts = name.split(" ");

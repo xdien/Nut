@@ -33,8 +33,6 @@ void MainTest::initTestCase()
     bool ok = db.open();
 
     QTEST_ASSERT(ok);
-
-    QTEST_ASSERT(ok);
 }
 
 void MainTest::insert1kPost()

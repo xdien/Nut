@@ -18,52 +18,32 @@
 **
 **************************************************************************/
 
-#ifndef DATABASE_P_H
-#define DATABASE_P_H
+#ifndef QUERY_P_H
+#define QUERY_P_H
 
-#include "database.h"
-#include "databasemodel.h"
-#include "changelogtable.h"
+#include "wherephrase.h"
 
-#include <QDebug>
+#include <QList>
+#include <QString>
 
-QT_BEGIN_NAMESPACE
-
-class DatabasePrivate
-{
-    Database *q_ptr;
-    Q_DECLARE_PUBLIC(Database)
+class Database;
+class TableSetBase;
+//template<class T>
+class QueryBase;
+class QueryPrivate{
+    QueryBase *q_ptr;
+    Q_DECLARE_PUBLIC(QueryBase)
 
 public:
-    DatabasePrivate(Database *parent);
-
-
-    bool open();
-
-    bool updateDatabase();
-    void createChangeLogs();
-    bool storeScheemaInDB();
-    DatabaseModel getLastScheema();
-    QVariantMap getCurrectScheema();
-
-    QSqlDatabase db;
-
-    QString hostName;
-    QString databaseName;
-    int port;
-    QString userName;
-    QString password;
-    QString connectionName;
-    QString driver;
-
-    QHash<QString, QString> tables;
-
-    SqlGeneratorBase *sqlGenertor;
-    DatabaseModel currentModel;
-
-    TableSet<ChangeLogTable> *changeLogs;
+    QueryPrivate(QueryBase *parent);
+    QString tableName;
+    QString select;
+    Database *database;
+    TableSetBase *tableSet;
+    QString joinClassName;
+    QList<WherePhrase> wheres;
+    QHash<QString, QString> orders;
+    QList<WherePhrase> orderPhrases;
 };
 
-QT_END_NAMESPACE
-
-#endif // DATABASE_P_H
+#endif // QUERY_P_H

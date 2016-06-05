@@ -28,327 +28,249 @@ QT_BEGIN_NAMESPACE
 PhraseData::PhraseData(const char *className, const char *s){
     text = QString(className) + "." + s;
     type = Field;
+    qDebug() << "(" << this << ")" << "Data type 0";
 }
 
 PhraseData::PhraseData(PhraseData *l, PhraseData::Condition o) : left(l){
     operatorCond = o;
     type = WithoutOperand;
+    qDebug() << "(" << this << ")" << "Data type 1";
 }
 
 PhraseData::PhraseData(PhraseData *l, PhraseData::Condition o, const PhraseData *r) : left(l), right(r){
     operatorCond = o;
     type = WithOther;
+    qDebug() << "(" << this << ")" << "Data type 2";
 }
 
 PhraseData::PhraseData(PhraseData *l, PhraseData::Condition o, QVariant r) : left(l), operand(r){
     operatorCond = o;
     type = WithVariant;
+    qDebug() << "(" << this << ")" << "Data type 1";
 }
 
 PhraseData::~PhraseData(){
-    //        if(type == WithOther){
-    //            delete left;
-    //            delete right;
-    //        }
-    //        if(type == WithVariant){
-    ////            qDebug() << operator
-    //                delete left;
-}
-
-QString PhraseData::operatorString() const
-{
-    switch (operatorCond){
-    case PhraseData::Equal:
-        return "=";
-    case PhraseData::NotEqual:
-        return "<>";
-    case PhraseData::Less:
-        return "<";
-    case PhraseData::Greater:
-        return ">";
-    case PhraseData::LessEqual:
-        return "<=";
-    case PhraseData::GreaterEqual:
-        return ">=";
-    case PhraseData::Null:
-        return "IS NULL";
-
-    case PhraseData::NotNull:
-        return "IS NOT NULL";
-
-    case PhraseData::In:
-        return "IN";
-
-    case PhraseData::NotIn:
-        return "NOT IN";
-
-    case PhraseData::And:
-        return "AND";
-    case PhraseData::Or:
-        return "OR";
-
-    case PhraseData::Like:
-        return "LIKE";
-    case PhraseData::NotLike:
-        return "NOT LIKE";
-
-    case PhraseData::Add:
-        return "+";
-    case PhraseData::Minus:
-        return "-";
-    case PhraseData::Multiple:
-        return "*";
-    case PhraseData::Divide:
-        return "/";
-
-    case PhraseData::Set:
-        return "=";
-
-    case PhraseData::Append:
-        return ",";
+    qDebug() << "(" << this << ")" << "Data Deleting..." << type;
+    if(type == WithOther){
+        qDebug() << "   - Other" << left << right;
+        delete left;
+        delete right;
     }
-
-    return QString("<FAIL>");
-}
-
-QString PhraseData::escapeVariant() const
-{
-    switch (operand.type()) {
-    case QVariant::Int:
-    case QVariant::Double:
-        return operand.toString();
-        break;
-
-    case QVariant::String:
-        return "'" + operand.toString() + "'";
-
-    case QVariant::DateTime:
-        return "'" + operand.toDateTime().toString() + "'";
-
-    case QVariant::Date:
-        return "'" + operand.toDate().toString() + "'";
-
-    case QVariant::Time:
-        return "'" + operand.toTime().toString() + "'";
-
-    case QVariant::StringList:
-    case QVariant::List:
-        return "['" + operand.toStringList().join("', '") + "']";
-
-    case QVariant::Invalid:
-        return "<FAIL>";
-
-    default:
-        return "";
+    if(type == WithVariant){
+        qDebug() << "   - Variant" << left;
+        if(left)
+            delete left;
     }
 }
 
-QString PhraseData::command(SqlGeneratorBase *generator) const
+PhraseData *WherePhrase::data() const
 {
-    QString ret = "";
+    return _data;
+}
 
-    switch(type){
-    case Field:
-        ret = text;
-        break;
+WherePhrase::WherePhrase(const char *className, const char *s)
+{
+    qDebug() << "(" << this << ")" << "class ctor" << className << s;
+    _data = new PhraseData(className, s);
+}
 
-    case WithVariant:
-        ret = left->command(generator) + " " + operatorString() + " " + escapeVariant();
-        break;
+WherePhrase::WherePhrase(const WherePhrase &l)
+{
+    _data = l._data;
+    //    l._data = 0;
+    qDebug() << "(" << this << ")" << "Copy ctor, from" <<  _data << (&l);
+    _dataPointer = QSharedPointer<PhraseData>(l._dataPointer);
+}
 
-    case WithOther:
-        ret = left->command(generator) + " " + operatorString() + " " + right->command(generator);
-        break;
+WherePhrase::WherePhrase(WherePhrase *l)
+{
+    _data = l->_data;
 
-    case WithoutOperand:
-        ret = left->command(generator) + " " + operatorString();
-        break;
-    }
+    qDebug() << "(" << this << ")" << "From pointer" << _data;
+//    _dataPointer = QSharedPointer<PhraseData>(_data);
+    l->_data = 0;
+    l->_dataPointer.reset(0);
+}
 
-    if(operatorCond == PhraseData::And || operatorCond == PhraseData::Or)
-        ret = "(" + ret + ")";
-
-    return ret;
+WherePhrase::WherePhrase(WherePhrase *l, PhraseData::Condition o)
+{
+    _data = new PhraseData(l->_data, o);
+//    _dataPointer = QSharedPointer<PhraseData>(_data);
+    l->_data = 0;
+    qDebug() << "(" << this << ")" << "From cond, " << _data << o;
+    l->_dataPointer.reset(0);
 }
 
 
-WherePhrase::WherePhrase(const char *className, const char *s) : willDeleteData(false)
+WherePhrase::WherePhrase(WherePhrase *l, PhraseData::Condition o, WherePhrase *r)
 {
-    data = new PhraseData(className, s);
-    text = QString(className) + "." + s;
+    _data = new PhraseData(l->_data, o, r->_data);
+//    _dataPointer = QSharedPointer<PhraseData>(_data);
+    l->_data = 0;
+    r->_data = 0;
+
+    qDebug() << "(" << this << ")" <<  "From two pointer" << _data;
+    l->_dataPointer.reset(0);
+    r->_dataPointer.reset(0);
 }
 
-WherePhrase::WherePhrase(PhraseData *l) : willDeleteData(false)
+WherePhrase::WherePhrase(WherePhrase *l, PhraseData::Condition o, QVariant r)
 {
-    data = l;
-}
+    _data = new PhraseData(l->_data, o, r);
+//    _dataPointer = QSharedPointer<PhraseData>(_data);
+    l->_data = 0;
 
-WherePhrase::WherePhrase(PhraseData *l, PhraseData::Condition o) : willDeleteData(false)
-{
-    data = new PhraseData(l, o);
-}
-
-
-WherePhrase::WherePhrase(PhraseData *l, PhraseData::Condition o, PhraseData *r) : willDeleteData(false)
-{
-    data = new PhraseData(l, o, r);
-}
-
-WherePhrase::WherePhrase(PhraseData *l, PhraseData::Condition o, QVariant r) : willDeleteData(false)
-{
-    data = new PhraseData(l, o, r);
+    qDebug() << "(" << this << ")" << "From variant," << _data << l << r;
+    l->_dataPointer.reset(0);
 }
 
 WherePhrase::~WherePhrase()
 {
-//    if(willDeleteData)
-//        delete data;
+    qDebug() << "(" << this << ")" << "Dtor" << _data << _dataPointer.data();
+    //    if(_data){
+    //        delete _data;
+    //        qDebug() << "deleted";
+    //    }
 }
 
-
-QString WherePhrase::command(SqlGeneratorBase *generator)
+WherePhrase WherePhrase::operator ==(const WherePhrase &other)
 {
-    willDeleteData = true;
-    return data->command(generator);
+    return WherePhrase(this, PhraseData::Equal, (WherePhrase*)&other);
 }
 
-void WherePhrase::deleteData(PhraseData *d)
+WherePhrase WherePhrase::operator !=(const WherePhrase &other)
 {
-    deleteData(d);
-    if(d->type == PhraseData::WithOther){
-        delete d->left;
-        delete d->right;
-    }
-    if(d->type == PhraseData::WithVariant)
-        delete d->left;
+    return WherePhrase(this, PhraseData::NotEqual, (WherePhrase*)&other);
 }
 
-WherePhrase WherePhrase::operator ==(const WherePhrase &other){
-    return WherePhrase(this->data, PhraseData::Equal, other.data);
+WherePhrase WherePhrase::operator <(const WherePhrase &other)
+{
+    return WherePhrase(this, PhraseData::Less, (WherePhrase*)&other);
 }
 
-WherePhrase WherePhrase::operator !=(const WherePhrase &other){
-    return WherePhrase(this->data, PhraseData::NotEqual, other.data);
+WherePhrase WherePhrase::operator >(const WherePhrase &other)
+{
+    return WherePhrase(this, PhraseData::Greater, (WherePhrase*)&other);
 }
 
-WherePhrase WherePhrase::operator <(const WherePhrase &other){
-    return WherePhrase(this->data, PhraseData::Less, other.data);
+WherePhrase WherePhrase::operator <=(const WherePhrase &other)
+{
+    return WherePhrase(this, PhraseData::LessEqual, (WherePhrase*)&other);
 }
 
-WherePhrase WherePhrase::operator >(const WherePhrase &other){
-    return WherePhrase(this->data, PhraseData::Greater, other.data);
-}
-
-WherePhrase WherePhrase::operator <=(const WherePhrase &other){
-    return WherePhrase(this->data, PhraseData::LessEqual, other.data);
-}
-
-WherePhrase WherePhrase::operator >=(const WherePhrase &other){
-    return WherePhrase(this->data, PhraseData::GreaterEqual, other.data);
+WherePhrase WherePhrase::operator >=(const WherePhrase &other)
+{
+    return WherePhrase(this, PhraseData::GreaterEqual, (WherePhrase*)&other);
 }
 
 WherePhrase WherePhrase::operator =(const WherePhrase &other)
 {
-    return WherePhrase(this->data, PhraseData::Set, other.data);
+    return WherePhrase(this, PhraseData::Set, (WherePhrase*)&other);
 }
 
-WherePhrase WherePhrase::operator +(const WherePhrase &other){
-    return WherePhrase(this->data, PhraseData::Add, other.data);
+WherePhrase WherePhrase::operator +(const WherePhrase &other)
+{
+    return WherePhrase(this, PhraseData::Add, (WherePhrase*)&other);
 }
 
-WherePhrase WherePhrase::operator -(const WherePhrase &other){
-    return WherePhrase(this->data, PhraseData::Minus, other.data);
+WherePhrase WherePhrase::operator -(const WherePhrase &other)
+{
+    return WherePhrase(this, PhraseData::Minus, (WherePhrase*)&other);
 }
 
-WherePhrase WherePhrase::operator *(const WherePhrase &other){
-    return WherePhrase(this->data, PhraseData::Multiple, other.data);
+WherePhrase WherePhrase::operator *(const WherePhrase &other)
+{
+    return WherePhrase(this, PhraseData::Multiple, (WherePhrase*)&other);
 }
 
-WherePhrase WherePhrase::operator /(const WherePhrase &other){
-    return WherePhrase(this->data, PhraseData::Divide, other.data);
+WherePhrase WherePhrase::operator /(const WherePhrase &other)
+{
+    return WherePhrase(this, PhraseData::Divide, (WherePhrase*)&other);
 }
 
-WherePhrase WherePhrase::operator &&(const WherePhrase &other){
-    return WherePhrase(this->data, PhraseData::And, other.data);
+WherePhrase WherePhrase::operator &&(const WherePhrase &other)
+{
+    return WherePhrase(this, PhraseData::And, (WherePhrase*)&other);
 }
 
-WherePhrase WherePhrase::operator ||(const WherePhrase &other){
-    return WherePhrase(this->data, PhraseData::Or, other.data);
+WherePhrase WherePhrase::operator ||(const WherePhrase &other)
+{
+    return WherePhrase(this, PhraseData::Or, (WherePhrase*)&other);
 }
 
 WherePhrase WherePhrase::operator &(const WherePhrase &other)
 {
-    return WherePhrase(this->data, PhraseData::Append, other.data);
+    qDebug() << "append" << this << (&other);
+    return WherePhrase(this, PhraseData::Append, (WherePhrase*)&other);
 }
 
-WherePhrase FieldPhrase::operator !(){
-    if(data->operatorCond < 20)
-        data->operatorCond = (PhraseData::Condition)((data->operatorCond + 10) % 20);
+WherePhrase FieldPhrase::operator !()
+{
+    if(_data->operatorCond < 20)
+        _data->operatorCond = (PhraseData::Condition)((_data->operatorCond + 10) % 20);
     else
         qFatal("Operator ! can not aplied to non condition statements");
 
-    return WherePhrase(data);
+    return this;//WherePhrase(this, PhraseData::Not);
 }
 
-WherePhrase WherePhrase::operator ==(const QVariant &other){
-    return WherePhrase(this->data, PhraseData::Equal, other);
-}
-
-WherePhrase WherePhrase::operator !=(const QVariant &other){
-    return WherePhrase(this->data, PhraseData::NotEqual, other);
-}
-
-WherePhrase WherePhrase::operator <(const QVariant &other){
-    return WherePhrase(this->data, PhraseData::Less, other);
-}
-
-WherePhrase WherePhrase::operator >(const QVariant &other){
-    qDebug() << "var";
-    return WherePhrase(this->data, PhraseData::Greater, other);
-}
-
-WherePhrase WherePhrase::operator <=(const QVariant &other){
-    return WherePhrase(this->data, PhraseData::LessEqual, other);
-}
-
-WherePhrase WherePhrase::operator >=(const QVariant &other){
-    return WherePhrase(this->data, PhraseData::GreaterEqual, other);
-}
-
-WherePhrase FieldPhrase::operator =(const QVariant &other)
+WherePhrase WherePhrase::operator ==(const QVariant &other)
 {
-    return WherePhrase(this->data, PhraseData::Set, other);
+    return WherePhrase(this, PhraseData::Equal, other);
+}
+
+WherePhrase WherePhrase::operator !=(const QVariant &other)
+{
+    return WherePhrase(this, PhraseData::NotEqual, other);
+}
+
+WherePhrase WherePhrase::operator <(const QVariant &other)
+{
+    return WherePhrase(this, PhraseData::Less, other);
+}
+
+WherePhrase WherePhrase::operator >(const QVariant &other)
+{
+    return WherePhrase(this, PhraseData::Greater, other);
+}
+
+WherePhrase WherePhrase::operator <=(const QVariant &other)
+{
+    return WherePhrase(this, PhraseData::LessEqual, other);
+}
+
+WherePhrase WherePhrase::operator >=(const QVariant &other)
+{
+    return WherePhrase(this, PhraseData::GreaterEqual, other);
 }
 
 FieldPhrase::FieldPhrase(const char *className, const char *s) : WherePhrase(className, s)
 {
-    data = new PhraseData(className, s);
-    text = QString(className) + "." + s;
+    qDebug() << "(" << this << ")" << "FieldPhrase ctor" << className << s;
 }
 
-WherePhrase FieldPhrase::operator &(const QVariant &other)
+WherePhrase FieldPhrase::operator =(const QVariant &other)
 {
-    Q_UNUSED(other);
-    qFatal("The operator & can not applied for two fields");
+    return WherePhrase(this, PhraseData::Set, other);
 }
 
 WherePhrase FieldPhrase::isNull(){
-    return WherePhrase(this->data, PhraseData::Null);
+    return WherePhrase(this, PhraseData::Null);
 }
 
 WherePhrase FieldPhrase::in(QVariantList list)
 {
-    return WherePhrase(this->data, PhraseData::In, list);
+    return WherePhrase(this, PhraseData::In, list);
 }
 
 WherePhrase FieldPhrase::in(QStringList list)
 {
-    return WherePhrase(this->data, PhraseData::In, list);
+    return WherePhrase(this, PhraseData::In, list);
 }
 
 WherePhrase FieldPhrase::like(QString pattern)
 {
-    return WherePhrase(this->data, PhraseData::Like, pattern);
+    return WherePhrase(this, PhraseData::Like, pattern);
 }
 
 QT_END_NAMESPACE

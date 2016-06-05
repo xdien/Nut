@@ -1,11 +1,17 @@
 #ifndef CONSTS_H
 #define CONSTS_H
 
-#define DRIVER "QPSQL"
+//#define DRIVER "QPSQL"
+//#define HOST "127.0.0.1"
+//#define DATABASE "nutdb3"
+//#define USERNAME "postgres"
+//#define PASSWORD "856856"
+
+#define DRIVER "QMYSQL"
 #define HOST "127.0.0.1"
-#define DATABASE "nutdb3"
-#define USERNAME "postgres"
-#define PASSWORD "856856"
+#define DATABASE "nutdb"
+#define USERNAME "root"
+#define PASSWORD "onlyonlyi"
 
 //    db.setDriver("QODBC");
 //    db.setHostName("127.0.0.1");
