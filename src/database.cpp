@@ -278,6 +278,10 @@ QString Database::password() const
     return d->password;
 }
 
+/*!
+ * \brief Database::connectionName
+ * \return Connection name of current Database \l QSqlDatabase::connectionName
+ */
 QString Database::connectionName() const
 {
     Q_D(const Database);

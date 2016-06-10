@@ -1,0 +1,14 @@
+digraph "SqlGeneratorBase"
+{
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  Node1 [label="SqlGeneratorBase",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled" fontcolor="black"];
+  Node1 -> Node2 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node2 [label="MySqlGenerator",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_my_sql_generator.html"];
+  Node1 -> Node3 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node3 [label="PostgreSqlGenerator",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_postgre_sql_generator.html"];
+  Node1 -> Node4 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node4 [label="SqliteGenerator",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_sqlite_generator.html"];
+  Node1 -> Node5 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node5 [label="SqlServerGenerator",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_sql_server_generator.html"];
+}

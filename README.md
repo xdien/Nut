@@ -6,6 +6,7 @@
 ## Features:
 
  - Easy to use
+ - Suport PosgtreSQL, MySQL, SQLite, Microsoft Sql Server
  - Automatically create and update database
  - IDE auto complete support, No hard-code nedded
  - Table join detect 

@@ -31,23 +31,44 @@ QueryPrivate::QueryPrivate(QueryBase *parent) : q_ptr(parent),
 /*!
   * \class Query
   * \brief This class hold a query. A query can be used for getting database rows, editing or deleting without row fetching.
+  * A query can be used for getting data from database.
+  * \code
+  * auto q = db.posts()->createQuery();
+  * q->join(Post::commentsTable());
+  * q->orderBy(!Post::saveDateField() & Post::bodyField());
+  * q->setWhere(Post::idField() > 5);
+  *
+  * auto posts = q->toList();
+  * \endcode
+  * In below code posts is a QList<Post> that contain rows from database from this query:
+  * \code
+  * SELECT * FROM post WHERE post.id>5 ORDER BY post.saveDate DESC, post.body
+  * \endcode
   */
 
 /*!
- * \brief toList
+ * \fn QList<T *> Query::toList(int count = -1)
  * \param count Total rows must be returned
  * \return This function return class itself
  * This function return rows
  */
 
 /*!
- * \brief setWhere
+ * \fn Query<T> *Query::setWhere(WherePhrase where)
+ * Where phrase is a phrase using table's static field methods.
+ * \code
+ * q->setWhere(Post::idField() == 4 || Post::titleField().isNull());
+ * \endcode
+ * In sql this is like below code:
+ * \code
+ * ... WHERE post.id=4 OR post.title IS NULL
+ * \endcode
  * \param where Where phrase
  * \return This function return class itself
  */
 
 /*!
- * \brief orderBy
+ * \fn Query<T> *Query::orderBy(WherePhrase phrase)
  * \param phrase Order phrase
  * \return This function return class itself
  *  orderBy set a new order for this query. Order can be a hrase like that:
