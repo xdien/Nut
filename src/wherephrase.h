@@ -28,8 +28,9 @@
 #include <QDateTime>
 #include <QTime>
 #include <QSharedPointer>
+#include "defines.h"
 
-QT_BEGIN_NAMESPACE
+NUT_BEGIN_NAMESPACE
 
 class SqlGeneratorBase;
 class PhraseData{
@@ -155,6 +156,6 @@ public:
 
 //};
 
-QT_END_NAMESPACE
+NUT_END_NAMESPACE
 
 #endif // PHRASE_H

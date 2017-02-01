@@ -22,6 +22,8 @@
 #include "table.h"
 #include "tablemodel.h"
 
+NUT_BEGIN_NAMESPACE
+
 SqliteGenerator::SqliteGenerator(Database *parent) : SqlGeneratorBase(parent)
 {
 
@@ -69,3 +71,5 @@ QString SqliteGenerator::fieldType(FieldModel *field)
 
     return dbType;
 }
+
+NUT_END_NAMESPACE

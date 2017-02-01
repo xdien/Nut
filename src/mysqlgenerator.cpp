@@ -21,7 +21,7 @@
 #include "mysqlgenerator.h"
 #include "tablemodel.h"
 
-QT_BEGIN_NAMESPACE
+NUT_BEGIN_NAMESPACE
 
 MySqlGenerator::MySqlGenerator(Database *parent) : SqlGeneratorBase(parent)
 {
@@ -72,4 +72,4 @@ QString MySqlGenerator::fieldType(FieldModel *field)
     return dbType;
 }
 
-QT_END_NAMESPACE
+NUT_END_NAMESPACE

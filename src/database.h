@@ -18,8 +18,8 @@
 **
 **************************************************************************/
 
-#ifndef DATABASE_H
-#define DATABASE_H
+#ifndef NUTDATABASE_H
+#define NUTDATABASE_H
 
 #include <QtCore/qglobal.h>
 #include <QtCore/QList>
@@ -28,21 +28,25 @@
 #include "defines.h"
 #include "tableset.h"
 
-QT_BEGIN_NAMESPACE
+NUT_BEGIN_NAMESPACE
 
 class DatabaseModel;
 class DatabasePrivate;
 class TableSetBase;
 class SqlGeneratorBase;
+class ChangeLogTable;
 class NUT_EXPORT Database : public QObject
 {
     Q_OBJECT
+
+//    NUT_DECLARE_TABLE(ChangeLogTable, _change_log)
 
     DatabasePrivate *d_ptr;
     Q_DECLARE_PRIVATE(Database)
 
 public:
     Database(QObject *parent = 0);
+    Database(const Database &other, QObject *parent = 0);
 
     bool open();
     void close();
@@ -82,6 +86,6 @@ private:
     QSet<TableSetBase*> tableSets;
 };
 
-QT_END_NAMESPACE
+NUT_END_NAMESPACE
 
-#endif // DATABASE_H
+#endif // NUTDATABASE_H

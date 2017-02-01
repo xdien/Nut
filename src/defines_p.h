@@ -43,4 +43,12 @@
 #define __nut_REMOVE            "remove"
 #define __nut_CHANGE            "change"
 
+#ifdef NUT_NAMESPACE
+#   define NUT_BEGIN_NAMESPACE     namespace NUT_NAMESPACE{
+#   define NUT_END_NAMESPACE       }
+#else
+#   define NUT_BEGIN_NAMESPACE
+#   define NUT_END_NAMESPACE
+#endif
+
 #endif // DEFINES_P_H

@@ -24,7 +24,7 @@
 #include "database.h"
 #include "sqlgeneratorbase_p.h"
 
-QT_BEGIN_NAMESPACE
+NUT_BEGIN_NAMESPACE
 
 Table::Table(QObject *parent) : QObject(parent)
 {
@@ -62,12 +62,12 @@ QString Table::primaryKey() const
 //    }
 
 //    return ret;
-    return TableModel::model(metaObject()->className())->primaryKey();
+    return TableModel::findByClassName(metaObject()->className())->primaryKey();
 }
 
 bool Table::isPrimaryKeyAutoIncrement() const
 {
-    return TableModel::model(metaObject()->className())->field(primaryKey())->isAutoIncrement;
+    return TableModel::findByClassName(metaObject()->className())->field(primaryKey())->isAutoIncrement;
 }
 
 
@@ -143,4 +143,4 @@ void Table::setStatus(const Status &status)
     _status = status;
 }
 
-QT_END_NAMESPACE
+NUT_END_NAMESPACE

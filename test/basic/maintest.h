@@ -25,6 +25,7 @@ private slots:
     void createPost2();
     void selectPosts();
     void selectPostsWithoutTitle();
+    void selectComments();
     void testDate();
     void selectWithInvalidRelation();
     void select10NewstPosts();

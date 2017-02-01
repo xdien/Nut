@@ -20,7 +20,7 @@
 
 #include "query.h"
 
-QT_BEGIN_NAMESPACE
+NUT_BEGIN_NAMESPACE
 
 QueryPrivate::QueryPrivate(QueryBase *parent) : q_ptr(parent),
      joinClassName(QString::null)
@@ -85,4 +85,4 @@ QueryPrivate::QueryPrivate(QueryBase *parent) : q_ptr(parent),
  * \endcode
  */
 
-QT_END_NAMESPACE
+NUT_END_NAMESPACE

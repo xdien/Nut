@@ -26,7 +26,7 @@
 #include <QtCore/QStringList>
 #include "wherephrase.h"
 
-QT_BEGIN_NAMESPACE
+NUT_BEGIN_NAMESPACE
 
 class Table;
 struct FieldModel;
@@ -98,6 +98,6 @@ private:
     QString phraseOrder(const PhraseData *d) const;
 };
 
-QT_END_NAMESPACE
+NUT_END_NAMESPACE
 
 #endif // SQLGENERATORBASE_H

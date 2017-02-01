@@ -21,15 +21,23 @@
 #ifndef SYNTAX_DEFINES_H
 #define SYNTAX_DEFINES_H
 
-#include "qglobal.h"
-#include "defines_p.h"
+#define NUT_NAMESPACE Nut
 
-#define QT_NAMESPACE Nut
+#include "defines_p.h"
+#include "qglobal.h"
+
 
 #ifdef NUT_COMPILE_STATIC
 #   define NUT_EXPORT
 #else
 #   define NUT_EXPORT Q_DECL_EXPORT
+#endif
+
+
+#ifdef NUT_NAMESPACE
+#   define __NUT_NAMESPACE_PERFIX NUT_NAMESPACE::
+#else
+#   define __NUT_NAMESPACE_PERFIX
 #endif
 
 // Database
@@ -38,13 +46,13 @@
 #define NUT_DECLARE_TABLE(type, name)                                       \
     Q_CLASSINFO(QT_STRINGIFY(__nut_NAME_PERFIX __nut_TABLE " "  #type), #name)                              \
     Q_PROPERTY(type* name READ name)                                        \
-    Q_PROPERTY(TableSet<type> name##s READ name##s)                         \
+    Q_PROPERTY(__NUT_NAMESPACE_PERFIX TableSet<type> name##s READ name##s)                         \
     type* m_##name;                                                         \
-    TableSet<type> *m_##name##s;                                            \
+    __NUT_NAMESPACE_PERFIX TableSet<type> *m_##name##s;                                            \
 public:                                                                     \
     static const type _##name;                                              \
     type* name() const{ return m_##name; }                                  \
-    TableSet<type> *name##s() const { return m_##name##s; }
+    __NUT_NAMESPACE_PERFIX TableSet<type> *name##s() const { return m_##name##s; }
 
 //Table
 #define NUT_DECLARE_FIELD(type, name, read, write)                          \
@@ -52,8 +60,8 @@ public:                                                                     \
     Q_CLASSINFO(QT_STRINGIFY(__nut_NAME_PERFIX #name " " __nut_FIELD), #name)             \
     type m_##name;                                                          \
 public:                                                                     \
-    static FieldPhrase name##Field(){                                       \
-        static FieldPhrase f = FieldPhrase(staticMetaObject.className(), #name);                          \
+    static __NUT_NAMESPACE_PERFIX FieldPhrase name##Field(){                                       \
+        static __NUT_NAMESPACE_PERFIX FieldPhrase f = __NUT_NAMESPACE_PERFIX FieldPhrase(staticMetaObject.className(), #name);                          \
         return f;                                                           \
     }                                                                       \
     type read() const{                                                      \
@@ -77,13 +85,13 @@ public:                                                                     \
 
 #define NUT_DECLARE_CHILD_TABLE(type, n)                                    \
     private:                                                                \
-        TableSet<type> *m_##n;                                              \
+        __NUT_NAMESPACE_PERFIX TableSet<type> *m_##n;                                              \
     public:                                                                 \
-        static type *n##Table(){                                             \
+        static type *n##Table(){                                            \
             static type *f = new type();                                    \
-            return f;                                                      \
+            return f;                                                       \
         }                                                                   \
-        TableSet<type> *n(){                                                \
+        __NUT_NAMESPACE_PERFIX TableSet<type> *n(){                                                \
             return m_##n;                                                   \
         }
 

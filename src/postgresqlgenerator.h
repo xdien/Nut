@@ -24,7 +24,7 @@
 #include <QtCore/qglobal.h>
 #include "sqlgeneratorbase_p.h"
 
-QT_BEGIN_NAMESPACE
+NUT_BEGIN_NAMESPACE
 
 class PostgreSqlGenerator : public SqlGeneratorBase
 {
@@ -36,6 +36,6 @@ public:
     QString diff(FieldModel *oldField, FieldModel *newField);
 };
 
-QT_END_NAMESPACE
+NUT_END_NAMESPACE
 
 #endif // POSTGRESQLGENERATOR_H

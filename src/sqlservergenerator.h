@@ -24,7 +24,7 @@
 #include <QtCore/qglobal.h>
 #include "sqlgeneratorbase_p.h"
 
-QT_BEGIN_NAMESPACE
+NUT_BEGIN_NAMESPACE
 
 class SqlServerGenerator : public SqlGeneratorBase
 {
@@ -39,6 +39,6 @@ public:
     QString escapeValue(const QVariant &v) const;
 };
 
-QT_END_NAMESPACE
+NUT_END_NAMESPACE
 
 #endif // SQLSERVERGENERATOR_H

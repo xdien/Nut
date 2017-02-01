@@ -5,6 +5,10 @@
 #include <QtCore/QDateTime>
 #include "table.h"
 
+#ifdef NUT_NAMESPACE
+using namespace NUT_NAMESPACE;
+#endif
+
 class Post;
 class Comment : public Table
 {

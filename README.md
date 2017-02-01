@@ -6,7 +6,7 @@
 ## Features:
 
  - Easy to use
- - Support PosgtreSQL, MySQL, SQLite, Microsoft Sql Server
+ - Support PosgtreSQL, MySQL, SQLite and Microsoft Sql Server
  - Automatically create and update database
  - IDE auto complete support, No hard-code nedded
  - Table join detect 
@@ -15,9 +15,8 @@
 ### Read data from database:
 
 ```cpp
-autoq = FROM(db.posts())
-        WHERE(Post::idField() == postId);
-
+auto q = db.posts()->createQuery();
+q->setWhere(Post::idField() == postId);
 auto posts = q->toList();
 // now posts is a QList<Post*> contain all posts in
 //  database that has id equal to postId variable
@@ -43,9 +42,8 @@ db.saveChanges();
 
 ### Modify database data:
 ```cpp
-auto q = FROM(db.posts())
-        WHERE(Post::idField() == postId);
-
+auto q = db.posts()->createQuery();
+q->setWhere(Post::idField() == postId);
 Post *post = q->first();
 
 if(post) {

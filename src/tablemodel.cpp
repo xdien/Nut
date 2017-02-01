@@ -26,8 +26,9 @@
 #include <QJsonObject>
 
 #include "tablemodel.h"
-#include "defines_p.h"
+#include "defines.h"
 
+NUT_BEGIN_NAMESPACE
 
 QSet<TableModel*> TableModel::_allModels;
 //QMap<int, TableScheema*> TableScheema::scheemas;
@@ -107,9 +108,10 @@ TableModel *TableModel::findByName(QString name)
 
 TableModel *TableModel::findByClassName(QString className)
 {
-    foreach (TableModel *model, _allModels)
+    foreach (TableModel *model, _allModels){
         if(model->className() == className)
             return model;
+    }
     return 0;
 }
 
@@ -144,6 +146,12 @@ TableModel::TableModel(int typeId, QString tableName)
     _typeId = typeId;
     _name = tableName;
     _className = tableMetaObject->className();
+
+    qDebug() << "New model"<< _className << tableName;
+//#ifdef NUT_NAMESPACE
+//    if(_className.startsWith(QT_STRINGIFY(NUT_NAMESPACE) "::"))
+//        _className = _className.replace(QT_STRINGIFY(NUT_NAMESPACE) "::", "");
+//#endif
 
     // get fields names
     for(int j = 0; j < tableMetaObject->classInfoCount(); j++){
@@ -223,6 +231,7 @@ TableModel::TableModel(int typeId, QString tableName)
     }
 
     _allModels.insert(this);
+    qDebug() << "all models"<<_allModels;
 }
 
 /*
@@ -269,6 +278,8 @@ TableModel::TableModel(QJsonObject json, QString tableName)
     if(json.keys().contains(__nut_PRIMARY_KEY))
         field(json.value(__nut_PRIMARY_KEY).toString())->isAutoIncrement = true;
 
+    _allModels.insert(this);
+
 }
 
 QJsonObject TableModel::toJson() const
@@ -279,7 +290,7 @@ QJsonObject TableModel::toJson() const
     foreach (FieldModel *f, _fields) {
         QJsonObject fieldObj;
         fieldObj.insert(__NAME, f->name);
-        fieldObj.insert(__TYPE, QVariant::typeToName(f->type));
+        fieldObj.insert(__TYPE, QString(QVariant::typeToName(f->type)));
 
         if(f->length)
             fieldObj.insert(__nut_LEN, f->length);
@@ -319,13 +330,20 @@ QJsonObject TableModel::toJson() const
 //    }
 //}
 
-TableModel *TableModel::model(QString className)
-{
-    foreach (TableModel *s, _allModels)
-        if(s->_className == className)
-            return s;
-    return 0;
-}
+//TableModel *TableModel::model(QString className)
+//{
+//    qFatal("");
+//#ifdef NUT_NAMESPACE
+//    if(className.startsWith(QT_STRINGIFY(NUT_NAMESPACE) "::"))
+//        className = className.replace(QT_STRINGIFY(NUT_NAMESPACE) "::", "");
+//#endif
+
+//    foreach (TableModel *s, _allModels)
+//        if(s->_className == className){
+//            return s;
+//        }
+//    return 0;
+//}
 
 RelationModel *TableModel::foregionKey(QString otherTable) const
 {
@@ -355,3 +373,5 @@ QString TableModel::primaryKey() const
             return f->name;
     return QString::null;
 }
+
+NUT_END_NAMESPACE

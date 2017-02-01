@@ -29,7 +29,7 @@
 #include "defines.h"
 #include "wherephrase.h"
 
-QT_BEGIN_NAMESPACE
+NUT_BEGIN_NAMESPACE
 
 class Database;
 class TableSetBase;
@@ -81,6 +81,6 @@ private:
     friend class Query;
 };
 
-QT_END_NAMESPACE
+NUT_END_NAMESPACE
 
 #endif // TABLE_H

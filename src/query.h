@@ -33,8 +33,9 @@
 #include "sqlgeneratorbase_p.h"
 #include "querybase_p.h"
 #include "wherephrase.h"
+#include "tablemodel.h"
 
-QT_BEGIN_NAMESPACE
+NUT_BEGIN_NAMESPACE
 
 template<class T>
 class NUT_EXPORT Query : public QueryBase
@@ -44,6 +45,7 @@ class NUT_EXPORT Query : public QueryBase
 
 public:
     Query(Database *database, TableSetBase *tableSet);
+
     ~Query();
 
     QList<T *> toList(int count = -1);
@@ -72,6 +74,11 @@ public:
     Query<T> *orderBy(WherePhrase phrase);
 };
 
+template <typename T>
+inline Query<T> *createQuery(TableSet<T> *tableSet){
+
+}
+
 template<class T>
 Q_OUTOFLINE_TEMPLATE Query<T>::Query(Database *database, TableSetBase *tableSet) : QueryBase(database),
     d_ptr(new QueryPrivate(this))
@@ -80,13 +87,13 @@ Q_OUTOFLINE_TEMPLATE Query<T>::Query(Database *database, TableSetBase *tableSet)
 
     d->database = database;
     d->tableSet = tableSet;
-    d->tableName = d->database->tableName(T::staticMetaObject.className());
+    d->tableName = TableModel::findByClassName(T::staticMetaObject.className())->name();
+                //d->database->tableName(T::staticMetaObject.className());
 }
 
 template<class T>
 Q_OUTOFLINE_TEMPLATE Query<T>::~Query()
 {
-    qDebug() << "Query::~Query()";
     Q_D(Query);
     delete d;
 }
@@ -107,7 +114,7 @@ Q_OUTOFLINE_TEMPLATE QList<T *> Query<T>::toList(int count)
                                         d->tableName,
                                         d->joinClassName));
 
-    QString pk =d->database->model().model(d->tableName)->primaryKey();
+    QString pk = d->database->model().model(d->tableName)->primaryKey();
     QVariant lastPkValue = QVariant();
     int childTypeId = 0;
     T *lastRow = 0;
@@ -149,7 +156,7 @@ Q_OUTOFLINE_TEMPLATE QList<T *> Query<T>::toList(int count)
 
             foreach (QString field, childFields)
                 childTable->setProperty(field.toLatin1().data(), q.value(field));
-
+//TODO: set database for table
             childTable->setParent(this);
             childTable->setParentTable(lastRow);
             childTable->setStatus(Table::FeatchedFromDB);
@@ -256,6 +263,6 @@ Q_OUTOFLINE_TEMPLATE Query<T> *Query<T>::orderBy(WherePhrase phrase)
     return this;
 }
 
-QT_END_NAMESPACE
+NUT_END_NAMESPACE
 
 #endif // QUERY_H

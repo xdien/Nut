@@ -27,6 +27,8 @@
 
 #include "defines.h"
 
+NUT_BEGIN_NAMESPACE
+
 class Table;
 class Database;
 class TableSetBase : public QObject
@@ -52,5 +54,7 @@ protected:
     Table *_table;
     QString _childClassName;
 };
+
+NUT_END_NAMESPACE
 
 #endif // TABLESETBASE_H

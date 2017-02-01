@@ -23,6 +23,8 @@
 #include "tablesetbase_p.h"
 #include "databasemodel.h"
 
+NUT_BEGIN_NAMESPACE
+
 TableSetBase::TableSetBase(Database *parent) : QObject(parent), _database(parent), _table(0)
 {
     parent->add(this);
@@ -75,3 +77,5 @@ void TableSetBase::setDatabase(Database *database)
 {
     _database = database;
 }
+
+NUT_END_NAMESPACE

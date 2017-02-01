@@ -24,7 +24,7 @@
 
 #include <QRegularExpression>
 
-QT_BEGIN_NAMESPACE
+NUT_BEGIN_NAMESPACE
 
 SqlServerGenerator::SqlServerGenerator(Database *parent) : SqlGeneratorBase(parent)
 {
@@ -110,4 +110,4 @@ QString SqlServerGenerator::escapeValue(const QVariant &v) const
         return SqlGeneratorBase::escapeValue(v);
 }
 
-QT_END_NAMESPACE
+NUT_END_NAMESPACE

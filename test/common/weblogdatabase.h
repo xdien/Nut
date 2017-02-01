@@ -3,6 +3,10 @@
 
 #include "database.h"
 
+#ifdef NUT_NAMESPACE
+using namespace NUT_NAMESPACE;
+#endif
+
 class Post;
 class Comment;
 class WeblogDatabase : public Database

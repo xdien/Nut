@@ -3,6 +3,9 @@
 
 #include <QtCore/QObject>
 #include <QtCore/qglobal.h>
+#include "defines.h"
+
+NUT_BEGIN_NAMESPACE
 
 class QueryBase : public QObject
 {
@@ -14,5 +17,7 @@ signals:
 
 public slots:
 };
+
+NUT_END_NAMESPACE
 
 #endif // QUERYBASE_H

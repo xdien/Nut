@@ -22,7 +22,7 @@
 #include "table.h"
 #include "tablemodel.h"
 
-QT_BEGIN_NAMESPACE
+NUT_BEGIN_NAMESPACE
 
 PostgreSqlGenerator::PostgreSqlGenerator(Database *parent) : SqlGeneratorBase (parent)
 {
@@ -93,4 +93,4 @@ QString PostgreSqlGenerator::diff(FieldModel *oldField, FieldModel *newField)
 }
 
 
-QT_END_NAMESPACE
+NUT_END_NAMESPACE

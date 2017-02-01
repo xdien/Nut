@@ -23,9 +23,14 @@
 
 #include <QJsonObject>
 
-QT_BEGIN_NAMESPACE
+NUT_BEGIN_NAMESPACE
 
 DatabaseModel::DatabaseModel() : QList<TableModel*>(), _versionMajor(0), _versionMinor(0)
+{
+
+}
+
+DatabaseModel::DatabaseModel(const DatabaseModel &other) : QList<TableModel*>(other), _versionMajor(0), _versionMinor(0)
 {
 
 }
@@ -34,6 +39,7 @@ TableModel *DatabaseModel::model(QString tableName) const
 {
     for(int i = 0; i < size(); i++){
         TableModel *s = at(i);
+
         if(s->name() == tableName)
             return s;
     }
@@ -149,4 +155,16 @@ void DatabaseModel::setVersionMinor(int versionMinor)
     _versionMinor = versionMinor;
 }
 
-QT_END_NAMESPACE
+bool DatabaseModel::remove(QString tableName)
+{
+    for(int i = 0; i < size(); i++){
+        TableModel *s = at(i);
+        if(s->name() == tableName){
+            removeAt(i);
+            return true;
+        }
+    }
+    return false;
+}
+
+NUT_END_NAMESPACE

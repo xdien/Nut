@@ -24,6 +24,8 @@
 #include <QtCore/qglobal.h>
 #include "sqlgeneratorbase_p.h"
 
+NUT_BEGIN_NAMESPACE
+
 class SqliteGenerator : public SqlGeneratorBase
 {
 public:
@@ -31,5 +33,7 @@ public:
 
     QString fieldType(FieldModel *field);
 };
+
+NUT_END_NAMESPACE
 
 #endif // SQLITEGENERATOR_H

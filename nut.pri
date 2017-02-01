@@ -3,10 +3,7 @@ QT += core widgets sql
 INCLUDEPATH += $$PWD/include
 
 HEADERS += \
-    $$PWD/src/database.h \
-    $$PWD/src/table.h \
     $$PWD/src/tableset.h \
-    $$PWD/src/database_p.h \
     $$PWD/src/defines_p.h \
     $$PWD/src/defines.h \
     $$PWD/src/query.h \
@@ -21,11 +18,12 @@ HEADERS += \
     $$PWD/src/tablemodel.h \
     $$PWD/src/sqlservergenerator.h \
     $$PWD/src/wherephrase.h \
-    $$PWD/src/query_p.h
+    $$PWD/src/query_p.h \
+    $$PWD/src/table.h \
+    $$PWD/src/database.h \
+    $$PWD/src/database_p.h
 
 SOURCES += \
-    $$PWD/src/database.cpp \
-    $$PWD/src/table.cpp \
     $$PWD/src/tableset.cpp \
     $$PWD/src/query.cpp \
     $$PWD/src/databasemodel.cpp \
@@ -38,4 +36,6 @@ SOURCES += \
     $$PWD/src/sqlitegenerator.cpp \
     $$PWD/src/tablemodel.cpp \
     $$PWD/src/sqlservergenerator.cpp \
-    $$PWD/src/wherephrase.cpp
+    $$PWD/src/wherephrase.cpp \
+    $$PWD/src/table.cpp \
+    $$PWD/src/database.cpp

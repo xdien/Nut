@@ -34,10 +34,10 @@ void MainTest::initTestCase()
 
     QTEST_ASSERT(ok);
 
-    FROM(db.comments())
-            DELETE();
-    FROM(db.posts())
-            DELETE();
+//    FROM(db.comments())
+//            DELETE();
+//    FROM(db.posts())
+//            DELETE();
 }
 
 void MainTest::dataScheema()
@@ -128,6 +128,15 @@ void MainTest::selectPostsWithoutTitle()
     QTEST_ASSERT(count == 0);
 }
 
+void MainTest::selectComments()
+{
+    auto comments = FROM(post->comments())
+            SELECT();
+
+    qDebug() << "comments count"<<comments.count();
+//    QTEST_ASSERT(comments.count());
+}
+
 void MainTest::testDate()
 {
     QDateTime d = QDateTime::currentDateTime();
@@ -146,7 +155,6 @@ void MainTest::testDate()
             WHERE(Post::idField() == newPost->id())
             FIRST();
 
-    qDebug() << d << q->saveDate();
     QTEST_ASSERT(q->saveDate() == d);
 }
 

@@ -24,7 +24,7 @@
 #include <QtCore/qglobal.h>
 #include "table.h"
 
-QT_BEGIN_NAMESPACE
+NUT_BEGIN_NAMESPACE
 
 class ChangeLogTable : public Table
 {
@@ -43,6 +43,6 @@ public:
     ChangeLogTable();
 };
 
-QT_END_NAMESPACE
+NUT_END_NAMESPACE
 
 #endif // CHANGELOGTABLE_H

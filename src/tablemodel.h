@@ -23,9 +23,13 @@
 
 #include <QtCore/QVariant>
 #include <QDebug>
-class QJsonObject;
-class TableModel;
+#include "defines.h"
 
+class QJsonObject;
+
+NUT_BEGIN_NAMESPACE
+
+class TableModel;
 struct FieldModel{
     FieldModel() : name(QString::null), length(0), defaultValue(QString::null),
         notNull(false), isPrimaryKey(false), isAutoIncrement(false), isUnique(false)
@@ -44,7 +48,7 @@ struct FieldModel{
 
     bool operator ==(const FieldModel &f) const{
 
-        bool b = name == f.name
+        bool b = name.toLower() == f.name.toLower()
                 && type == f.type
                 && length == f.length
                 && defaultValue == f.defaultValue
@@ -75,7 +79,7 @@ public:
 
 //    static TableScheema *registerTable(int typeId, QString tableName);
 //    static void createForegionKeys();
-    static TableModel* model(QString className);
+//    static TableModel* model(QString className);
 
     FieldModel *field(QString name) const;
     RelationModel *foregionKey(QString otherTable) const;
@@ -111,5 +115,7 @@ private:
     QList<RelationModel*> _foregionKeys;
     static QSet<TableModel*>_allModels;
 };
+
+NUT_END_NAMESPACE
 
 #endif // TABLESCHEEMA_H

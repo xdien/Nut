@@ -24,7 +24,7 @@
 #include <QtCore/qglobal.h>
 #include "sqlgeneratorbase_p.h"
 
-QT_BEGIN_NAMESPACE
+NUT_BEGIN_NAMESPACE
 
 class MySqlGenerator : public SqlGeneratorBase
 {
@@ -35,6 +35,6 @@ public:
 
 };
 
-QT_END_NAMESPACE
+NUT_END_NAMESPACE
 
 #endif // MYSQLGENERATOR_H

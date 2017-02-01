@@ -30,7 +30,7 @@
 #include "tablemodel.h"
 #include "wherephrase.h"
 
-QT_BEGIN_NAMESPACE
+NUT_BEGIN_NAMESPACE
 
 SqlGeneratorBase::SqlGeneratorBase(Database *parent) : QObject((QObject*)parent)
 {
@@ -305,7 +305,6 @@ QString SqlGeneratorBase::selectCommand(SqlGeneratorBase::AgregateType t, QStrin
     for(int i = 0; i < _database->model().count(); i++)
         sql = sql.replace(_database->model().at(i)->className() + "." , _database->model().at(i)->name() + ".");
 
-    qDebug() << "new sql" << sql;
     return sql;
 }
 
@@ -328,7 +327,6 @@ QString SqlGeneratorBase::createWhere(QList<WherePhrase> &wheres)
 
         whereText.append(phrase(w.data()));
     }
-qDebug() << "WHWRE="<< whereText;
 //    if(whereText != "")
 //        whereText.prepend(" WHERE ");
 
@@ -358,11 +356,10 @@ QString SqlGeneratorBase::selectCommand(QString selectPhrase, QList<WherePhrase>
                     .arg(rel->localColumn);
             orderby.append(tableName + "." + pk);
         }else{
-            qWarning(QString("Relation between table %1 and class %2 (%3) not exists!")
-                     .arg(tableName)
-                     .arg(joinClassName)
-                     .arg(joinTableName.isNull() ? "NULL" : joinTableName)
-                     .toLatin1().data());
+            qWarning("Relation between table %s and class %s (%s) not exists!",
+                     qPrintable(tableName),
+                     qPrintable(joinClassName),
+                     qPrintable(joinTableName.isNull() ? "NULL" : joinTableName));
             joinClassName = QString::null;
         }
     }
@@ -385,9 +382,7 @@ QString SqlGeneratorBase::selectCommand(QString selectPhrase, QList<WherePhrase>
     for(int i = 0; i < _database->model().count(); i++)
         command = command.replace(_database->model().at(i)->className() + "." , _database->model().at(i)->name() + ".");
 
-    qDebug() << command;
     return command;
-
 }
 
 QString SqlGeneratorBase::deleteCommand(QList<WherePhrase> &wheres, QString tableName)
@@ -406,6 +401,10 @@ QString SqlGeneratorBase::deleteCommand(QList<WherePhrase> &wheres, QString tabl
 QString SqlGeneratorBase::escapeValue(const QVariant &v)const
 {
     switch (v.type()) {
+    case QVariant::Bool:
+        return v.toBool() ? "1" : "0";
+        break;
+
     case QVariant::Int:
     case QVariant::UInt:
     case QVariant::ULongLong:
@@ -470,7 +469,6 @@ QString SqlGeneratorBase::phrase(const PhraseData *d) const
 {
     QString ret = "";
 
-    qDebug() << "type"<<d->type;
     switch(d->type){
     case PhraseData::Field:
         ret = d->text;
@@ -555,4 +553,4 @@ QString SqlGeneratorBase::operatorString(const PhraseData::Condition &cond) cons
 }
 
 
-QT_END_NAMESPACE
+NUT_END_NAMESPACE

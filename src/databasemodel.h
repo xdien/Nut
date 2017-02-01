@@ -22,17 +22,20 @@
 #define DATABASEMODEL_H
 
 #include <QtCore/QList>
+#include"defines.h"
 
-QT_BEGIN_NAMESPACE
+class QJsonObject;
+
+NUT_BEGIN_NAMESPACE
 
 class TableModel;
 struct RelationModel;
-class QJsonObject;
 class DatabaseModel : public QList<TableModel*>
 {
     int _versionMajor, _versionMinor;
 public:
     DatabaseModel();
+    DatabaseModel(const DatabaseModel &other);
 
     TableModel *model(QString tableName) const;
     TableModel *modelByClass(QString className) const;
@@ -50,8 +53,10 @@ public:
 
     int versionMinor() const;
     void setVersionMinor(int versionMinor);
+
+    bool remove(QString tableName);
 };
 
-QT_END_NAMESPACE
+NUT_END_NAMESPACE
 
 #endif // DATABASEMODEL_H

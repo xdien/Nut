@@ -27,10 +27,10 @@
 #include <QtSql/QSqlQuery>
 
 #include "tablesetbase_p.h"
-#include "database.h"
+//#include "database.h"
 #include "table.h"
 
-QT_BEGIN_NAMESPACE
+NUT_BEGIN_NAMESPACE
 
 template<class T>
 class Query;
@@ -125,6 +125,6 @@ Q_OUTOFLINE_TEMPLATE void TableSet<T>::remove(QList<T *> t)
         remove(i);
 }
 
-QT_END_NAMESPACE
+NUT_END_NAMESPACE
 
 #endif // TABLESET_H

@@ -27,7 +27,7 @@
 
 #include <QDebug>
 
-QT_BEGIN_NAMESPACE
+NUT_BEGIN_NAMESPACE
 
 class DatabasePrivate
 {
@@ -44,7 +44,7 @@ public:
     void createChangeLogs();
     bool storeScheemaInDB();
     DatabaseModel getLastScheema();
-    QVariantMap getCurrectScheema();
+    void getCurrectScheema();
 
     QSqlDatabase db;
 
@@ -62,8 +62,10 @@ public:
     DatabaseModel currentModel;
 
     TableSet<ChangeLogTable> *changeLogs;
+
+    static int lastId;
 };
 
-QT_END_NAMESPACE
+NUT_END_NAMESPACE
 
 #endif // DATABASE_P_H

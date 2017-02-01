@@ -26,6 +26,8 @@
 #include <QList>
 #include <QString>
 
+NUT_BEGIN_NAMESPACE
+
 class Database;
 class TableSetBase;
 //template<class T>
@@ -45,5 +47,7 @@ public:
     QHash<QString, QString> orders;
     QList<WherePhrase> orderPhrases;
 };
+
+NUT_END_NAMESPACE
 
 #endif // QUERY_P_H

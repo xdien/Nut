@@ -23,41 +23,42 @@
 
 #include "wherephrase.h"
 
-QT_BEGIN_NAMESPACE
+NUT_BEGIN_NAMESPACE
 
 PhraseData::PhraseData(const char *className, const char *s){
     text = QString(className) + "." + s;
     type = Field;
-    qDebug() << "(" << this << ")" << "Data type 0";
+    operatorCond = NotAssign;
+//    qDebug() << "(" << this << ")" << "Data type 0";
 }
 
 PhraseData::PhraseData(PhraseData *l, PhraseData::Condition o) : left(l){
     operatorCond = o;
     type = WithoutOperand;
-    qDebug() << "(" << this << ")" << "Data type 1";
+//    qDebug() << "(" << this << ")" << "Data type 1";
 }
 
 PhraseData::PhraseData(PhraseData *l, PhraseData::Condition o, const PhraseData *r) : left(l), right(r){
     operatorCond = o;
     type = WithOther;
-    qDebug() << "(" << this << ")" << "Data type 2";
+//    qDebug() << "(" << this << ")" << "Data type 2";
 }
 
 PhraseData::PhraseData(PhraseData *l, PhraseData::Condition o, QVariant r) : left(l), operand(r){
     operatorCond = o;
     type = WithVariant;
-    qDebug() << "(" << this << ")" << "Data type 1";
+//    qDebug() << "(" << this << ")" << "Data type 1";
 }
 
 PhraseData::~PhraseData(){
-    qDebug() << "(" << this << ")" << "Data Deleting..." << type;
+//    qDebug() << "(" << this << ")" << "Data Deleting..." << type;
     if(type == WithOther){
-        qDebug() << "   - Other" << left << right;
+//        qDebug() << "   - Other" << left << right;
         delete left;
         delete right;
     }
     if(type == WithVariant){
-        qDebug() << "   - Variant" << left;
+//        qDebug() << "   - Variant" << left;
         if(left)
             delete left;
     }
@@ -70,7 +71,7 @@ PhraseData *WherePhrase::data() const
 
 WherePhrase::WherePhrase(const char *className, const char *s)
 {
-    qDebug() << "(" << this << ")" << "class ctor" << className << s;
+//    qDebug() << "(" << this << ")" << "class ctor" << className << s;
     _data = new PhraseData(className, s);
 }
 
@@ -78,7 +79,7 @@ WherePhrase::WherePhrase(const WherePhrase &l)
 {
     _data = l._data;
     //    l._data = 0;
-    qDebug() << "(" << this << ")" << "Copy ctor, from" <<  _data << (&l);
+//    qDebug() << "(" << this << ")" << "Copy ctor, from" <<  _data << (&l);
     _dataPointer = QSharedPointer<PhraseData>(l._dataPointer);
 }
 
@@ -86,7 +87,7 @@ WherePhrase::WherePhrase(WherePhrase *l)
 {
     _data = l->_data;
 
-    qDebug() << "(" << this << ")" << "From pointer" << _data;
+//    qDebug() << "(" << this << ")" << "From pointer" << _data;
 //    _dataPointer = QSharedPointer<PhraseData>(_data);
     l->_data = 0;
     l->_dataPointer.reset(0);
@@ -97,7 +98,7 @@ WherePhrase::WherePhrase(WherePhrase *l, PhraseData::Condition o)
     _data = new PhraseData(l->_data, o);
 //    _dataPointer = QSharedPointer<PhraseData>(_data);
     l->_data = 0;
-    qDebug() << "(" << this << ")" << "From cond, " << _data << o;
+//    qDebug() << "(" << this << ")" << "From cond, " << _data << o;
     l->_dataPointer.reset(0);
 }
 
@@ -109,7 +110,7 @@ WherePhrase::WherePhrase(WherePhrase *l, PhraseData::Condition o, WherePhrase *r
     l->_data = 0;
     r->_data = 0;
 
-    qDebug() << "(" << this << ")" <<  "From two pointer" << _data;
+//    qDebug() << "(" << this << ")" <<  "From two pointer" << _data;
     l->_dataPointer.reset(0);
     r->_dataPointer.reset(0);
 }
@@ -120,13 +121,13 @@ WherePhrase::WherePhrase(WherePhrase *l, PhraseData::Condition o, QVariant r)
 //    _dataPointer = QSharedPointer<PhraseData>(_data);
     l->_data = 0;
 
-    qDebug() << "(" << this << ")" << "From variant," << _data << l << r;
+//    qDebug() << "(" << this << ")" << "From variant," << _data << l << r;
     l->_dataPointer.reset(0);
 }
 
 WherePhrase::~WherePhrase()
 {
-    qDebug() << "(" << this << ")" << "Dtor" << _data << _dataPointer.data();
+//    qDebug() << "(" << this << ")" << "Dtor" << _data << _dataPointer.data();
     //    if(_data){
     //        delete _data;
     //        qDebug() << "deleted";
@@ -200,7 +201,6 @@ WherePhrase WherePhrase::operator ||(const WherePhrase &other)
 
 WherePhrase WherePhrase::operator &(const WherePhrase &other)
 {
-    qDebug() << "append" << this << (&other);
     return WherePhrase(this, PhraseData::Append, (WherePhrase*)&other);
 }
 
@@ -246,7 +246,7 @@ WherePhrase WherePhrase::operator >=(const QVariant &other)
 
 FieldPhrase::FieldPhrase(const char *className, const char *s) : WherePhrase(className, s)
 {
-    qDebug() << "(" << this << ")" << "FieldPhrase ctor" << className << s;
+//    qDebug() << "(" << this << ")" << "FieldPhrase ctor" << className << s;
 }
 
 WherePhrase FieldPhrase::operator =(const QVariant &other)
@@ -273,6 +273,6 @@ WherePhrase FieldPhrase::like(QString pattern)
     return WherePhrase(this, PhraseData::Like, pattern);
 }
 
-QT_END_NAMESPACE
+NUT_END_NAMESPACE
 
 
