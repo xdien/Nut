@@ -60,8 +60,8 @@ public:                                                                     \
     Q_CLASSINFO(QT_STRINGIFY(__nut_NAME_PERFIX #name " " __nut_FIELD), #name)             \
     type m_##name;                                                          \
 public:                                                                     \
-    static __NUT_NAMESPACE_PERFIX FieldPhrase name##Field(){                                       \
-        static __NUT_NAMESPACE_PERFIX FieldPhrase f = __NUT_NAMESPACE_PERFIX FieldPhrase(staticMetaObject.className(), #name);                          \
+    static __NUT_NAMESPACE_PERFIX FieldPhrase<type> name##Field(){                                       \
+        static __NUT_NAMESPACE_PERFIX FieldPhrase<type> f = __NUT_NAMESPACE_PERFIX FieldPhrase<type>(staticMetaObject.className(), #name);                          \
         return f;                                                           \
     }                                                                       \
     type read() const{                                                      \

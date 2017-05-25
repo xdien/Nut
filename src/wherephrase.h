@@ -29,6 +29,7 @@
 #include <QTime>
 #include <QSharedPointer>
 #include "defines.h"
+#include "dbgeography.h"
 
 NUT_BEGIN_NAMESPACE
 
@@ -63,7 +64,10 @@ public:
         Add,
         Minus,
         Multiple,
-        Divide
+        Divide,
+
+        //special types
+        Distance
     };
 
     enum Type{
@@ -136,6 +140,7 @@ public:
     PhraseData *data() const;
 };
 
+template<typename T>
 class FieldPhrase: public WherePhrase{
 public:
     FieldPhrase(const char *className, const char* s);
@@ -155,6 +160,66 @@ public:
 //class FieldPhrase: public WherePhrase{
 
 //};
+
+
+template<typename T>
+Q_OUTOFLINE_TEMPLATE FieldPhrase<T>::FieldPhrase(const char *className, const char *s) : WherePhrase(className, s)
+{
+//    qDebug() << "(" << this << ")" << "FieldPhrase ctor" << className << s;
+}
+
+template<typename T>
+Q_OUTOFLINE_TEMPLATE WherePhrase FieldPhrase<T>::operator =(const QVariant &other)
+{
+    return WherePhrase(this, PhraseData::Set, other);
+}
+
+template<typename T>
+Q_OUTOFLINE_TEMPLATE WherePhrase FieldPhrase<T>::operator !()
+{
+    if(_data->operatorCond < 20)
+        _data->operatorCond = (PhraseData::Condition)((_data->operatorCond + 10) % 20);
+    else
+        qFatal("Operator ! can not aplied to non condition statements");
+
+    return this;//WherePhrase(this, PhraseData::Not);
+}
+
+template<typename T>
+Q_OUTOFLINE_TEMPLATE WherePhrase FieldPhrase<T>::isNull(){
+    return WherePhrase(this, PhraseData::Null);
+}
+
+template<typename T>
+Q_OUTOFLINE_TEMPLATE WherePhrase FieldPhrase<T>::in(QVariantList list)
+{
+    return WherePhrase(this, PhraseData::In, list);
+}
+
+template<typename T>
+Q_OUTOFLINE_TEMPLATE WherePhrase FieldPhrase<T>::in(QStringList list)
+{
+    return WherePhrase(this, PhraseData::In, list);
+}
+
+template<typename T>
+Q_OUTOFLINE_TEMPLATE WherePhrase FieldPhrase<T>::like(QString pattern)
+{
+    return WherePhrase(this, PhraseData::Like, pattern);
+}
+
+template<>
+class FieldPhrase<DbGeography>: public WherePhrase {
+public:
+    FieldPhrase(const char *className, const char* s) : WherePhrase(className, s){
+
+    }
+
+    WherePhrase distance(const DbGeography &geo) {
+        return WherePhrase(this, PhraseData::Distance, QVariant::fromValue(geo));
+    }
+};
+
 
 NUT_END_NAMESPACE
 

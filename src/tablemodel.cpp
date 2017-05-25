@@ -181,7 +181,7 @@ TableModel::TableModel(int typeId, QString tableName)
                 f = fieldObj;
         if(!fieldObj)
             continue;
-
+qDebug() <<"fieldProperty.type()"<<fieldProperty.typeName();
         fieldObj->type = fieldProperty.type();
     }
 
@@ -259,6 +259,7 @@ TableModel::TableModel(QJsonObject json, QString tableName)
         QJsonObject fieldObject = fields.value(key).toObject();
         FieldModel *f = new FieldModel;
         f->name = fieldObject.value(__NAME).toString();
+        qDebug() << "fieldObject.value(__TYPE).toString()"<<fieldObject.value(__TYPE).toString();
         f->type = QVariant::nameToType(fieldObject.value(__TYPE).toString().toLatin1().data());
 
         if(fieldObject.contains(__nut_NOT_NULL))

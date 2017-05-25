@@ -204,16 +204,6 @@ WherePhrase WherePhrase::operator &(const WherePhrase &other)
     return WherePhrase(this, PhraseData::Append, (WherePhrase*)&other);
 }
 
-WherePhrase FieldPhrase::operator !()
-{
-    if(_data->operatorCond < 20)
-        _data->operatorCond = (PhraseData::Condition)((_data->operatorCond + 10) % 20);
-    else
-        qFatal("Operator ! can not aplied to non condition statements");
-
-    return this;//WherePhrase(this, PhraseData::Not);
-}
-
 WherePhrase WherePhrase::operator ==(const QVariant &other)
 {
     return WherePhrase(this, PhraseData::Equal, other);
@@ -242,35 +232,6 @@ WherePhrase WherePhrase::operator <=(const QVariant &other)
 WherePhrase WherePhrase::operator >=(const QVariant &other)
 {
     return WherePhrase(this, PhraseData::GreaterEqual, other);
-}
-
-FieldPhrase::FieldPhrase(const char *className, const char *s) : WherePhrase(className, s)
-{
-//    qDebug() << "(" << this << ")" << "FieldPhrase ctor" << className << s;
-}
-
-WherePhrase FieldPhrase::operator =(const QVariant &other)
-{
-    return WherePhrase(this, PhraseData::Set, other);
-}
-
-WherePhrase FieldPhrase::isNull(){
-    return WherePhrase(this, PhraseData::Null);
-}
-
-WherePhrase FieldPhrase::in(QVariantList list)
-{
-    return WherePhrase(this, PhraseData::In, list);
-}
-
-WherePhrase FieldPhrase::in(QStringList list)
-{
-    return WherePhrase(this, PhraseData::In, list);
-}
-
-WherePhrase FieldPhrase::like(QString pattern)
-{
-    return WherePhrase(this, PhraseData::Like, pattern);
 }
 
 NUT_END_NAMESPACE

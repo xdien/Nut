@@ -21,7 +21,8 @@ HEADERS += \
     $$PWD/src/query_p.h \
     $$PWD/src/table.h \
     $$PWD/src/database.h \
-    $$PWD/src/database_p.h
+    $$PWD/src/database_p.h \
+    $$PWD/src/dbgeography.h
 
 SOURCES += \
     $$PWD/src/tableset.cpp \
@@ -38,4 +39,5 @@ SOURCES += \
     $$PWD/src/sqlservergenerator.cpp \
     $$PWD/src/wherephrase.cpp \
     $$PWD/src/table.cpp \
-    $$PWD/src/database.cpp
+    $$PWD/src/database.cpp \
+    $$PWD/src/dbgeography.cpp

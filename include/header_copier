@@ -7,7 +7,7 @@ pattern="\.\.\/src\/([a-z]+)\.h\:class\sNUT_EXPORT\s(\w+)"
 echo "" > "Nut"
 echo "" > "nut.h"
 
-mkdir -p Nut
+#mkdir -p Nut
 
 while read line; do
 	if [[ $line =~ $pattern ]]; then

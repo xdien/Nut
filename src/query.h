@@ -54,9 +54,9 @@ public:
 
     int count();
 
-    QVariant max(FieldPhrase &f);
-    QVariant min(FieldPhrase &f);
-    QVariant average(FieldPhrase &f){
+    QVariant max(FieldPhrase<int> &f);
+    QVariant min(FieldPhrase<int> &f);
+    QVariant average(FieldPhrase<int> &f){
         //TODO: ...
         return QVariant();
     }
@@ -198,7 +198,7 @@ Q_OUTOFLINE_TEMPLATE int Query<T>::count()
 }
 
 template<class T>
-Q_OUTOFLINE_TEMPLATE QVariant Query<T>::max(FieldPhrase &f){
+Q_OUTOFLINE_TEMPLATE QVariant Query<T>::max(FieldPhrase<int> &f){
     Q_D(Query);
 
     QSqlQuery q = d->database->exec(d->database->sqlGenertor()->selectCommand("MAX(" + f.data()->text + ")", d->wheres, d->orders, d->tableName, d->joinClassName));
@@ -209,7 +209,7 @@ Q_OUTOFLINE_TEMPLATE QVariant Query<T>::max(FieldPhrase &f){
 }
 
 template<class T>
-Q_OUTOFLINE_TEMPLATE QVariant Query<T>::min(FieldPhrase &f){
+Q_OUTOFLINE_TEMPLATE QVariant Query<T>::min(FieldPhrase<int> &f){
     Q_D(Query);
 
     QSqlQuery q = d->database->exec(d->database->sqlGenertor()->selectCommand("MIN(" + f.data()->text + ")", d->wheres, d->orders, d->tableName, d->joinClassName));

@@ -39,14 +39,13 @@ class NUT_EXPORT Database : public QObject
 {
     Q_OBJECT
 
-//    NUT_DECLARE_TABLE(ChangeLogTable, _change_log)
-
     DatabasePrivate *d_ptr;
     Q_DECLARE_PRIVATE(Database)
 
 public:
     Database(QObject *parent = 0);
     Database(const Database &other, QObject *parent = 0);
+    ~Database();
 
     bool open();
     void close();
@@ -71,7 +70,8 @@ public:
     SqlGeneratorBase *sqlGenertor() const;
 
 protected:
-    virtual void databaseUpdated(int oldMajor, int oldMinor, int newMajor, int newMinor);
+    virtual void databaseUpdated(int oldMajor, int oldMinor, int newMajor,
+                                 int newMinor);
 
 public slots:
     void setDatabaseName(QString databaseName);
@@ -83,9 +83,9 @@ public slots:
     void setDriver(QString driver);
 
 private:
-    QSet<TableSetBase*> tableSets;
+    QSet<TableSetBase *> tableSets;
 };
 
 NUT_END_NAMESPACE
 
-#endif // NUTDATABASE_H
+#endif  // NUTDATABASE_H

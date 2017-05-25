@@ -64,9 +64,19 @@ QString PostgreSqlGenerator::fieldType(FieldModel *field)
         else
             dbType = "text";
         break;
+
+    case QVariant::Point:
+    case QVariant::PointF:
+        dbType="point";
+        break;
+
     default:
+        qDebug() << "Type for " << (int)field->type << field->type << "(" << QMetaType::typeName(field->type) << ")" << "nut supported";
         dbType = "";
     }
+
+    if(field->type == QMetaType::type("Nut::DbGeography"))
+        dbType = "GEOGRAPHY";
 
     return dbType;
 }
