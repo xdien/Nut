@@ -106,27 +106,35 @@ Q_OUTOFLINE_TEMPLATE QList<T *> Query<T>::toList(int count)
     d->select = "*";
 
 //    QSqlQuery q = d->database->exec(d->database->sqlGenertor()->selectCommand(d->wheres, d->orders, d->tableName, d->joinClassName));
-    QSqlQuery q = d->database->exec(d->database->sqlGenertor()->selectCommand(
-                                        SqlGeneratorBase::SelectALl,
-                                        "",
-                                        d->wheres,
-                                        d->orderPhrases,
-                                        d->tableName,
-                                        d->joinClassName));
+    QString sql = d->database->sqlGenertor()->selectCommand(
+                    SqlGeneratorBase::SelectALl,
+                    "",
+                    d->wheres,
+                    d->orderPhrases,
+                    d->tableName,
+                    d->joinClassName);
+    qDebug() << "sql="<<sql;
+    QSqlQuery q = d->database->exec(sql);
 
-    QString pk = d->database->model().model(d->tableName)->primaryKey();
+    QString pk = TableModel::findByName(d->tableName)->primaryKey();
+//    QString pk = d->database->model().model(d->tableName)->primaryKey();
     QVariant lastPkValue = QVariant();
     int childTypeId = 0;
     T *lastRow = 0;
     TableSetBase *childTableSet;
-    QStringList masterFields = d->database->model().model(d->tableName)->fieldsNames();
+    QStringList masterFields = TableModel::findByName(d->tableName)->fieldsNames();
+    //QStringList masterFields = d->database->model().model(d->tableName)->fieldsNames();
     QStringList childFields;
-    if(!d->joinClassName.isNull())
-        if(d->database->model().modelByClass(d->joinClassName)){
-            childFields = d->database->model().modelByClass(d->joinClassName)->fieldsNames();
+    if(!d->joinClassName.isNull()) {
+        TableModel *joinTableModel = TableModel::findByClassName(d->joinClassName);
+        if(joinTableModel){
+//            childFields = d->database->model().modelByClass(d->joinClassName)->fieldsNames();
+            childFields = TableModel::findByClassName(d->joinClassName)->fieldsNames();
             QString joinTableName = d->database->tableName(d->joinClassName);
-            childTypeId = d->database->model().model(joinTableName)->typeId();
+//            childTypeId = d->database->model().model(joinTableName)->typeId();
+            childTypeId = TableModel::findByName(joinTableName)->typeId();
         }
+    }
 
     while (q.next()) {
         if(lastPkValue != q.value(pk)){

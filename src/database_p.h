@@ -38,7 +38,7 @@ public:
     DatabasePrivate(Database *parent);
 
 
-    bool open();
+    bool open(bool updateDatabase);
 
     bool updateDatabase();
     void createChangeLogs();

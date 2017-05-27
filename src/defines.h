@@ -36,8 +36,10 @@
 
 #ifdef NUT_NAMESPACE
 #   define __NUT_NAMESPACE_PERFIX NUT_NAMESPACE::
+#   define NUT_WRAP_NAMESPACE(x) NUT_NAMESPACE::x
 #else
 #   define __NUT_NAMESPACE_PERFIX
+#   define NUT_WRAP_NAMESPACE(x) x
 #endif
 
 // Database
@@ -85,13 +87,13 @@ public:                                                                     \
 
 #define NUT_DECLARE_CHILD_TABLE(type, n)                                    \
     private:                                                                \
-        __NUT_NAMESPACE_PERFIX TableSet<type> *m_##n;                                              \
+        NUT_WRAP_NAMESPACE(TableSet)<type> *m_##n;                                              \
     public:                                                                 \
         static type *n##Table(){                                            \
             static type *f = new type();                                    \
             return f;                                                       \
         }                                                                   \
-        __NUT_NAMESPACE_PERFIX TableSet<type> *n(){                                                \
+        NUT_WRAP_NAMESPACE(TableSet)<type> *n(){                                                \
             return m_##n;                                                   \
         }
 

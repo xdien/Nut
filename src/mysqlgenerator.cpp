@@ -65,9 +65,27 @@ QString MySqlGenerator::fieldType(FieldModel *field)
         else
             dbType = "text";
         break;
+
+    case QVariant::Point:
+    case QVariant::PointF:
+        dbType = "POINT";
+        break;
+
+    case QVariant::Polygon:
+    case QVariant::PolygonF:
+        dbType = "POLYGON";
+        break;
+
     default:
+        qWarning("Type %s::%s(%d) is not supported",
+                 qPrintable(field->name),
+                 QMetaType::typeName(field->type),
+                 field->type);
         dbType = "";
     }
+
+    if(field->typeName == QStringLiteral("Nut::DbGeography"))
+        dbType = "GEOMETRY";
 
     return dbType;
 }

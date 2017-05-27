@@ -53,10 +53,11 @@ DatabasePrivate::DatabasePrivate(Database *parent) : q_ptr(parent)
 {
 }
 
-bool DatabasePrivate::open()
+bool DatabasePrivate::open(bool update)
 {
     Q_Q(Database);
-    getCurrectScheema();
+    if (update)
+        getCurrectScheema();
 
     connectionName = q->metaObject()->className()
                      + QString::number(DatabasePrivate::lastId);
@@ -88,7 +89,7 @@ bool DatabasePrivate::open()
                     qWarning("Creating database error: %s",
                              db.lastError().text().toLatin1().data());
 
-                return open();
+                return open(update);
             } else {
                 qWarning("Unknown error detecting change logs, %s",
                          db.lastError().text().toLatin1().data());
@@ -97,7 +98,10 @@ bool DatabasePrivate::open()
         return false;
     }
 
-    return updateDatabase();
+    if(update)
+        return updateDatabase();
+    else
+        return true;
 }
 
 bool DatabasePrivate::updateDatabase()
@@ -441,7 +445,13 @@ void Database::databaseUpdated(int oldMajor, int oldMinor, int newMajor,
     Q_UNUSED(newMinor);
 }
 
+
 bool Database::open()
+{
+    return open(true);
+}
+
+bool Database::open(bool updateDatabase)
 {
     Q_D(Database);
 
@@ -468,7 +478,7 @@ bool Database::open()
                  driver().toLatin1().constData());
         return false;
     } else {
-        return d->open();
+        return d->open(updateDatabase);
     }
 }
 

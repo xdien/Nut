@@ -39,6 +39,7 @@ struct FieldModel{
 
     QString name;
     QVariant::Type type;
+    QString typeName;
     int length;
     QString defaultValue;
     bool notNull;
@@ -100,6 +101,7 @@ public:
     QList<RelationModel *> foregionKeys() const;
     QStringList fieldsNames() const;
 
+    static QSet<TableModel *> allModels();
     static TableModel *findByTypeId(int typeId);
     static TableModel *findByName(QString name);
     static TableModel *findByClassName(QString className);

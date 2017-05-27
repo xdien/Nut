@@ -379,8 +379,8 @@ QString SqlGeneratorBase::selectCommand(QString selectPhrase, QList<WherePhrase>
             + whereText
             + orderText;
 
-    for(int i = 0; i < _database->model().count(); i++)
-        command = command.replace(_database->model().at(i)->className() + "." , _database->model().at(i)->name() + ".");
+    foreach (TableModel *m, TableModel::allModels())
+        command = command.replace(m->className() + "." , m->name() + ".");
 
     return command;
 }

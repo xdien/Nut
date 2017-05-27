@@ -48,6 +48,7 @@ public:
     ~Database();
 
     bool open();
+    bool open(bool updateDatabase);
     void close();
 
     QSqlQuery exec(QString sql);

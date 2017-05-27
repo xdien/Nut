@@ -90,6 +90,11 @@ QStringList TableModel::fieldsNames() const
     return ret;
 }
 
+QSet<TableModel *> TableModel::allModels()
+{
+    return _allModels;
+}
+
 TableModel *TableModel::findByTypeId(int typeId)
 {
     foreach (TableModel *model, _allModels)
@@ -147,7 +152,6 @@ TableModel::TableModel(int typeId, QString tableName)
     _name = tableName;
     _className = tableMetaObject->className();
 
-    qDebug() << "New model"<< _className << tableName;
 //#ifdef NUT_NAMESPACE
 //    if(_className.startsWith(QT_STRINGIFY(NUT_NAMESPACE) "::"))
 //        _className = _className.replace(QT_STRINGIFY(NUT_NAMESPACE) "::", "");
@@ -181,8 +185,12 @@ TableModel::TableModel(int typeId, QString tableName)
                 f = fieldObj;
         if(!fieldObj)
             continue;
-qDebug() <<"fieldProperty.type()"<<fieldProperty.typeName();
         fieldObj->type = fieldProperty.type();
+        fieldObj->typeName = QString(fieldProperty.typeName());
+//        qDebug() <<"fieldProperty.type()"
+//                <<fieldProperty.typeName()
+//                << fieldProperty.type()
+//                << fieldObj->type;
     }
 
     // Browse class infos
