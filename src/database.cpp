@@ -48,6 +48,7 @@
 NUT_BEGIN_NAMESPACE
 
 int DatabasePrivate::lastId = 0;
+QMap<QString, DatabaseModel> DatabasePrivate::allTableMaps;
 
 DatabasePrivate::DatabasePrivate(Database *parent) : q_ptr(parent)
 {
@@ -56,8 +57,8 @@ DatabasePrivate::DatabasePrivate(Database *parent) : q_ptr(parent)
 bool DatabasePrivate::open(bool update)
 {
     Q_Q(Database);
-    if (update)
-        getCurrectScheema();
+//    if (update)
+    bool isNew = getCurrectScheema();
 
     connectionName = q->metaObject()->className()
                      + QString::number(DatabasePrivate::lastId);
@@ -98,7 +99,7 @@ bool DatabasePrivate::open(bool update)
         return false;
     }
 
-    if(update)
+    if(isNew)
         return updateDatabase();
     else
         return true;
@@ -124,7 +125,6 @@ bool DatabasePrivate::updateDatabase()
     QStringList sql = sqlGenertor->diff(last, current);
     db.transaction();
     foreach (QString s, sql) {
-        qDebug() <<"cmd="<<s;
         db.exec(s);
 
         if (db.lastError().type() != QSqlError::NoError)
@@ -158,9 +158,14 @@ bool DatabasePrivate::updateDatabase()
     return ok;
 }
 
-void DatabasePrivate::getCurrectScheema()
+bool DatabasePrivate::getCurrectScheema()
 {
     Q_Q(Database);
+    if (allTableMaps.contains(q->metaObject()->className())) {
+        currentModel = allTableMaps[q->metaObject()->className()];
+        return false;
+    }
+
     tables.clear();
 
     // TODO: change logs must not be in model
@@ -201,7 +206,6 @@ void DatabasePrivate::getCurrectScheema()
         QMetaProperty tableProperty = q->metaObject()->property(i);
         int typeId = QMetaType::type(tableProperty.typeName());
 
-        qDebug() << tables.values().contains(tableProperty.name()) << typeId;
         if (tables.values().contains(tableProperty.name())
             && typeId >= QVariant::UserType) {
             TableModel *sch = new TableModel(typeId, tableProperty.name());
@@ -212,6 +216,9 @@ void DatabasePrivate::getCurrectScheema()
     foreach (TableModel *sch, currentModel)
         foreach (RelationModel *fk, sch->foregionKeys())
             fk->table = currentModel.modelByClass(fk->className);
+
+    allTableMaps.insert(q->metaObject()->className(), currentModel);
+    return true;
 }
 
 DatabaseModel DatabasePrivate::getLastScheema()
@@ -251,7 +258,6 @@ DatabaseModel DatabasePrivate::getLastScheema()
     //            ret.append(sch);
     //        }
     //    }
-    // qDebug() << "ret=" <<ret;
     //    return ret;
 }
 
@@ -385,7 +391,7 @@ DatabaseModel Database::model() const
 QString Database::tableName(QString className)
 {
     Q_D(Database);
-    return d->tables[className];
+    return model().modelByClass(className)->name();
 }
 
 void Database::setDatabaseName(QString databaseName)
@@ -494,8 +500,9 @@ QSqlQuery Database::exec(QString sql)
 
     QSqlQuery q = d->db.exec(sql);
     if (d->db.lastError().type() != QSqlError::NoError)
-        qWarning("Error executing sql command: %s",
-                 d->db.lastError().text().toLatin1().data());
+        qWarning("Error executing sql command: %s; Command=%s",
+                 d->db.lastError().text().toLatin1().data(),
+                 sql.toUtf8().constData());
     return q;
 }
 
@@ -504,10 +511,12 @@ void Database::add(TableSetBase *t)
     tableSets.insert(t);
 }
 
-void Database::saveChanges()
+int Database::saveChanges()
 {
+    int rowsAffected = 0;
     foreach (TableSetBase *ts, tableSets)
-        ts->save(this);
+        rowsAffected += ts->save(this);
+    return rowsAffected;
 }
 
 void Database::cleanUp()

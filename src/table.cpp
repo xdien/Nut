@@ -121,7 +121,7 @@ void Table::setTableSet(TableSetBase *parent)
     _tableSet->add(this);
 }
 
-void Table::save(Database *db)
+int Table::save(Database *db)
 {
     QSqlQuery q = db->exec(db->sqlGenertor()->saveRecord(this, db->tableName(metaObject()->className())));
 
@@ -131,6 +131,8 @@ void Table::save(Database *db)
     foreach(TableSetBase *ts, tableSets)
         ts->save(db);
     setStatus(FeatchedFromDB);
+
+    return q.numRowsAffected();
 }
 
 Table::Status Table::status() const

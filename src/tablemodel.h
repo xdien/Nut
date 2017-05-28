@@ -73,7 +73,7 @@ class TableModel
 {
 public:
 
-    TableModel(int typeId, QString tableName);
+    TableModel(int typeId, QString tableName = QString::null);
     TableModel(QJsonObject json, QString tableName);
 
     QJsonObject toJson() const;
@@ -103,7 +103,7 @@ public:
 
     static QSet<TableModel *> allModels();
     static TableModel *findByTypeId(int typeId);
-    static TableModel *findByName(QString name);
+//    static TableModel *findByName(QString name);
     static TableModel *findByClassName(QString className);
 
     bool operator ==(const TableModel &t) const;

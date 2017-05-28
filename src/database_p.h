@@ -44,7 +44,7 @@ public:
     void createChangeLogs();
     bool storeScheemaInDB();
     DatabaseModel getLastScheema();
-    void getCurrectScheema();
+    bool getCurrectScheema();
 
     QSqlDatabase db;
 
@@ -56,13 +56,15 @@ public:
     QString connectionName;
     QString driver;
 
-    QHash<QString, QString> tables;
 
     SqlGeneratorBase *sqlGenertor;
     DatabaseModel currentModel;
 
     TableSet<ChangeLogTable> *changeLogs;
 
+    QT_DEPRECATED
+    QHash<QString, QString> tables;
+    static QMap<QString, DatabaseModel> allTableMaps;
     static int lastId;
 };
 

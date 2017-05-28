@@ -49,7 +49,7 @@ public:
     };
 
     void add(TableSetBase *);
-    void save(Database *db);
+    int save(Database *db);
 
     QString primaryKey() const;
     bool isPrimaryKeyAutoIncrement() const;

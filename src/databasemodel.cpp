@@ -43,6 +43,10 @@ TableModel *DatabaseModel::model(QString tableName) const
         if(s->name() == tableName)
             return s;
     }
+
+    qWarning("Table with name '%s' not found in model",
+             qUtf8Printable(tableName));
+    Q_UNREACHABLE();
     return 0;
 }
 
@@ -53,6 +57,10 @@ TableModel *DatabaseModel::modelByClass(QString className) const
         if(s->className() == className)
             return s;
     }
+
+    qWarning("Table with class name '%s' not found in model",
+             qUtf8Printable(className));
+    Q_UNREACHABLE();
     return 0;
 }
 

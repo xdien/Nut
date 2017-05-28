@@ -54,7 +54,7 @@ public:
     QSqlQuery exec(QString sql);
 
     void add(TableSetBase *);
-    void saveChanges();
+    int saveChanges();
     void cleanUp();
 
     QString databaseName() const;

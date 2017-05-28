@@ -56,10 +56,7 @@ public:
 
     QVariant max(FieldPhrase<int> &f);
     QVariant min(FieldPhrase<int> &f);
-    QVariant average(FieldPhrase<int> &f){
-        //TODO: ...
-        return QVariant();
-    }
+    QVariant average(FieldPhrase<int> &f);
 
     Query<T> *join(const QString &tableName);
     Query<T> *setWhere(WherePhrase where);
@@ -87,8 +84,8 @@ Q_OUTOFLINE_TEMPLATE Query<T>::Query(Database *database, TableSetBase *tableSet)
 
     d->database = database;
     d->tableSet = tableSet;
-    d->tableName = TableModel::findByClassName(T::staticMetaObject.className())->name();
-                //d->database->tableName(T::staticMetaObject.className());
+    d->tableName = //TableModel::findByClassName(T::staticMetaObject.className())->name();
+                d->database->model().modelByClass(T::staticMetaObject.className())->name();
 }
 
 template<class T>
@@ -113,17 +110,18 @@ Q_OUTOFLINE_TEMPLATE QList<T *> Query<T>::toList(int count)
                     d->orderPhrases,
                     d->tableName,
                     d->joinClassName);
-    qDebug() << "sql="<<sql;
     QSqlQuery q = d->database->exec(sql);
 
-    QString pk = TableModel::findByName(d->tableName)->primaryKey();
-//    QString pk = d->database->model().model(d->tableName)->primaryKey();
+//    QString pk = TableModel::findByName(d->tableName)->primaryKey();
+    QString pk = d->database->model().model(d->tableName)->primaryKey();
     QVariant lastPkValue = QVariant();
     int childTypeId = 0;
     T *lastRow = 0;
     TableSetBase *childTableSet;
-    QStringList masterFields = TableModel::findByName(d->tableName)->fieldsNames();
-    //QStringList masterFields = d->database->model().model(d->tableName)->fieldsNames();
+
+    //FIXME: getting table error
+//    QStringList masterFields = TableModel::findByName(d->tableName)->fieldsNames();
+    QStringList masterFields = d->database->model().model(d->tableName)->fieldsNames();
     QStringList childFields;
     if(!d->joinClassName.isNull()) {
         TableModel *joinTableModel = TableModel::findByClassName(d->joinClassName);
@@ -131,8 +129,8 @@ Q_OUTOFLINE_TEMPLATE QList<T *> Query<T>::toList(int count)
 //            childFields = d->database->model().modelByClass(d->joinClassName)->fieldsNames();
             childFields = TableModel::findByClassName(d->joinClassName)->fieldsNames();
             QString joinTableName = d->database->tableName(d->joinClassName);
-//            childTypeId = d->database->model().model(joinTableName)->typeId();
-            childTypeId = TableModel::findByName(joinTableName)->typeId();
+            childTypeId = d->database->model().model(joinTableName)->typeId();
+//            childTypeId = TableModel::findByName(joinTableName)->typeId();
         }
     }
 
@@ -200,6 +198,7 @@ Q_OUTOFLINE_TEMPLATE int Query<T>::count()
     d->select = "COUNT(*)";
     QSqlQuery q = d->database->exec(d->database->sqlGenertor()->selectCommand("COUNT(*)", d->wheres, d->orders, d->tableName, d->joinClassName));
 
+    qDebug() << "sql="<<d->database->sqlGenertor()->selectCommand("COUNT(*)", d->wheres, d->orders, d->tableName, d->joinClassName);
     if(q.next())
         return q.value(0).toInt();
     return 0;
@@ -221,6 +220,18 @@ Q_OUTOFLINE_TEMPLATE QVariant Query<T>::min(FieldPhrase<int> &f){
     Q_D(Query);
 
     QSqlQuery q = d->database->exec(d->database->sqlGenertor()->selectCommand("MIN(" + f.data()->text + ")", d->wheres, d->orders, d->tableName, d->joinClassName));
+
+    if(q.next())
+        return q.value(0).toInt();
+    return 0;
+}
+
+template<class T>
+Q_OUTOFLINE_TEMPLATE QVariant Query<T>::average(FieldPhrase<int> &f)
+{
+    Q_D(Query);
+
+    QSqlQuery q = d->database->exec(d->database->sqlGenertor()->selectCommand("AVG(" + f.data()->text + ")", d->wheres, d->orders, d->tableName, d->joinClassName));
 
     if(q.next())
         return q.value(0).toInt();

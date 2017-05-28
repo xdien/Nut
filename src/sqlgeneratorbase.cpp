@@ -51,6 +51,7 @@ QString SqlGeneratorBase::masterDatabaseName(QString databaseName)
 
 QString SqlGeneratorBase::saveRecord(Table *t, QString tableName)
 {
+    Q_ASSERT(!tableName.isEmpty() && !tableName.isNull());
     switch(t->status()){
     case Table::Added:
         return insertRecord(t, tableName);

@@ -103,13 +103,13 @@ TableModel *TableModel::findByTypeId(int typeId)
     return 0;
 }
 
-TableModel *TableModel::findByName(QString name)
-{
-    foreach (TableModel *model, _allModels)
-        if(model->name() == name)
-            return model;
-    return 0;
-}
+//TableModel *TableModel::findByName(QString name)
+//{
+//    foreach (TableModel *model, _allModels)
+//        if(model->name() == name)
+//            return model;
+//    return 0;
+//}
 
 TableModel *TableModel::findByClassName(QString className)
 {
@@ -146,6 +146,10 @@ bool TableModel::operator !=(const TableModel &t) const
 
 TableModel::TableModel(int typeId, QString tableName)
 {
+    //TODO: check that
+//    if  (findByTypeId(typeId))
+//        return;
+
     const QMetaObject *tableMetaObject = QMetaType::metaObjectForType(typeId);
 
     _typeId = typeId;
@@ -238,8 +242,8 @@ TableModel::TableModel(int typeId, QString tableName)
         }
     }
 
-    _allModels.insert(this);
-    qDebug() << "all models"<<_allModels;
+    if(!findByTypeId(typeId) && !tableName.isNull())
+        _allModels.insert(this);
 }
 
 /*
@@ -267,7 +271,6 @@ TableModel::TableModel(QJsonObject json, QString tableName)
         QJsonObject fieldObject = fields.value(key).toObject();
         FieldModel *f = new FieldModel;
         f->name = fieldObject.value(__NAME).toString();
-        qDebug() << "fieldObject.value(__TYPE).toString()"<<fieldObject.value(__TYPE).toString();
         f->type = QVariant::nameToType(fieldObject.value(__TYPE).toString().toLatin1().data());
 
         if(fieldObject.contains(__nut_NOT_NULL))
@@ -288,7 +291,6 @@ TableModel::TableModel(QJsonObject json, QString tableName)
         field(json.value(__nut_PRIMARY_KEY).toString())->isAutoIncrement = true;
 
     _allModels.insert(this);
-
 }
 
 QJsonObject TableModel::toJson() const
