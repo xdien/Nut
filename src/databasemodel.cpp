@@ -46,7 +46,6 @@ TableModel *DatabaseModel::model(QString tableName) const
 
     qWarning("Table with name '%s' not found in model",
              qUtf8Printable(tableName));
-    Q_UNREACHABLE();
     return 0;
 }
 

@@ -328,6 +328,10 @@ Database::Database(const Database &other, QObject *parent)
 
 Database::~Database()
 {
+    Q_D(Database);
+    if (d->db.isOpen())
+        d->db.close();
+
     if (d_ptr)
         delete d_ptr;
 }
