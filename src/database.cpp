@@ -308,6 +308,7 @@ Database::Database(QObject *parent)
     // d->changeLogs->sett
     DatabasePrivate::lastId++;
     //    m__change_logs = new TableSet<ChangeLogTable>(this);
+    qDebug() << "normal constructor called in database";
 }
 
 Database::Database(const Database &other, QObject *parent)
@@ -323,6 +324,7 @@ Database::Database(const Database &other, QObject *parent)
     setUserName(other.userName());
     setPassword(other.password());
 
+    qDebug() << "copy constructor called in database";
     //    m__change_logs = new TableSet<ChangeLogTable>(this);
 }
 

@@ -48,11 +48,12 @@ public:
         Delete
     };
     enum AgregateType{
-        SelectALl,
+        SelectAll,
         Count,
         Min,
         Max,
-        Average
+        Average,
+        SignleField
     };
 
     SqlGeneratorBase(Database *parent);
@@ -76,6 +77,10 @@ public:
     virtual QString deleteRecords(QString tableName, QString where);
 
     virtual QString selectCommand(AgregateType t, QString agregateArg,
+                                  QList<WherePhrase> &wheres, QList<WherePhrase> &orders,
+                                  QString tableName, QString joinClassName);
+
+    virtual QString selectCommand(QString selectPhrase, QString agregateArg,
                                   QList<WherePhrase> &wheres, QList<WherePhrase> &orders,
                                   QString tableName, QString joinClassName);
 

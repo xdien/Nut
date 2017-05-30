@@ -48,12 +48,15 @@ public:
 
     ~Query();
 
-    QList<T *> toList(int count = -1);
     int remove();
     T *first();
 
     int count();
 
+    QList<T *> toList(int count = -1);
+
+    template<typename F>
+    QList<F> select(const FieldPhrase<F> f);
     QVariant max(FieldPhrase<int> &f);
     QVariant min(FieldPhrase<int> &f);
     QVariant average(FieldPhrase<int> &f);
@@ -104,7 +107,7 @@ Q_OUTOFLINE_TEMPLATE QList<T *> Query<T>::toList(int count)
 
 //    QSqlQuery q = d->database->exec(d->database->sqlGenertor()->selectCommand(d->wheres, d->orders, d->tableName, d->joinClassName));
     QString sql = d->database->sqlGenertor()->selectCommand(
-                    SqlGeneratorBase::SelectALl,
+                    SqlGeneratorBase::SelectAll,
                     "",
                     d->wheres,
                     d->orderPhrases,
@@ -177,6 +180,30 @@ Q_OUTOFLINE_TEMPLATE QList<T *> Query<T>::toList(int count)
 
     deleteLater();
     return result;
+}
+
+template <typename T>
+template <typename F>
+Q_OUTOFLINE_TEMPLATE QList<F> Query<T>::select(const FieldPhrase<F> f)
+{
+    Q_D(Query);
+    QList<F> ret;
+    QString sql = d->database->sqlGenertor()->selectCommand(
+                    SqlGeneratorBase::SignleField,
+                    f.data()->text,
+                    d->wheres,
+                    d->orderPhrases,
+                    d->tableName,
+                    d->joinClassName);
+    QSqlQuery q = d->database->exec(sql);
+
+    while (q.next()) {
+        QVariant v = q.value(f.data()->text);
+        ret.append(v.value<F>());
+    }
+
+    deleteLater();
+    return ret;
 }
 
 template<class T>

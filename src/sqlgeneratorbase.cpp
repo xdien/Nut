@@ -220,7 +220,7 @@ QString SqlGeneratorBase::deleteRecord(Table *t, QString tableName)
 QString SqlGeneratorBase::agregateText(const AgregateType &t, const QString &arg) const
 {
     switch (t) {
-    case SelectALl:
+    case SelectAll:
         return "*";
         break;
 
@@ -238,6 +238,10 @@ QString SqlGeneratorBase::agregateText(const AgregateType &t, const QString &arg
 
     case Count:
         return "COUNT(" + arg + ")";
+        break;
+
+    case SignleField:
+        return arg;
         break;
 
     default:
@@ -296,6 +300,34 @@ QString SqlGeneratorBase::selectCommand(SqlGeneratorBase::AgregateType t, QStrin
     }
 
     QString sql = "SELECT " + select + " FROM " + from;
+
+    if(where != "")
+        sql.append(" WHERE " + where);
+
+    if(order != "")
+        sql.append(" ORDER BY " + order);
+
+    for(int i = 0; i < _database->model().count(); i++)
+        sql = sql.replace(_database->model().at(i)->className() + "." , _database->model().at(i)->name() + ".");
+
+    return sql;
+}
+
+QString SqlGeneratorBase::selectCommand(QString selectPhrase, QString agregateArg,
+                              QList<WherePhrase> &wheres, QList<WherePhrase> &orders,
+                              QString tableName, QString joinClassName)
+{
+    QString where = createWhere(wheres);
+    QString order = "";
+    QString from = fromTableText(tableName, joinClassName, order);
+
+    foreach(WherePhrase p, orders){
+        if(order != "")
+            order.append(", ");
+        order.append(phraseOrder(p.data()));
+    }
+
+    QString sql = "SELECT " + selectPhrase + " FROM " + from;
 
     if(where != "")
         sql.append(" WHERE " + where);
