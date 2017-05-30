@@ -164,6 +164,17 @@ WherePhrase WherePhrase::operator >=(const WherePhrase &other)
     return WherePhrase(this, PhraseData::GreaterEqual, (WherePhrase*)&other);
 }
 
+
+WherePhrase WherePhrase::operator !()
+{
+    if(_data->operatorCond < 20)
+        _data->operatorCond = (PhraseData::Condition)((_data->operatorCond + 10) % 20);
+    else
+        qFatal("Operator ! can not aplied to non condition statements");
+
+    return this;//WherePhrase(this, PhraseData::Not);
+}
+
 WherePhrase WherePhrase::operator =(const WherePhrase &other)
 {
     return WherePhrase(this, PhraseData::Set, (WherePhrase*)&other);

@@ -72,6 +72,8 @@ public:
 //    Query<T> *setWhere(const QString &where);
     Query<T> *orderBy(QString fieldName, QString type);
     Query<T> *orderBy(WherePhrase phrase);
+
+    int update(WherePhrase phrase);
 };
 
 template <typename T>
@@ -307,6 +309,20 @@ Q_OUTOFLINE_TEMPLATE Query<T> *Query<T>::orderBy(WherePhrase phrase)
     Q_D(Query);
     d->orderPhrases.append(phrase);
     return this;
+}
+
+template<class T>
+Q_OUTOFLINE_TEMPLATE int Query<T>::update(WherePhrase phrase)
+{
+    Q_D(Query);
+
+    QString sql = d->database->sqlGenertor()->updateCommand(
+                phrase,
+                d->wheres,
+                d->tableName);
+    qDebug() << sql;
+    QSqlQuery q = d->database->exec(sql);
+    return q.numRowsAffected();
 }
 
 NUT_END_NAMESPACE

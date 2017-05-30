@@ -431,6 +431,22 @@ QString SqlGeneratorBase::deleteCommand(QList<WherePhrase> &wheres, QString tabl
     return command;
 }
 
+QString SqlGeneratorBase::updateCommand(WherePhrase &phrase, QList<WherePhrase> &wheres, QString tableName)
+{
+    QString p = this->phrase(phrase.data());
+    QString where = createWhere(wheres);
+
+    QString sql = "UPDATE " + tableName + " SET " + p;
+
+    if(where != "")
+        sql.append(" WHERE " + where);
+
+    for(int i = 0; i < _database->model().count(); i++)
+        sql = sql.replace(_database->model().at(i)->className() + "." , _database->model().at(i)->name() + ".");
+
+    return sql;
+}
+
 QString SqlGeneratorBase::escapeValue(const QVariant &v)const
 {
     switch (v.type()) {

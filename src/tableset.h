@@ -52,7 +52,7 @@ public:
     int length() const;
     T *at(int i) const;
     const T &operator[](int i) const;
-    Query<T> *createQuery();
+    Query<T> *query();
 };
 
 template<class T>
@@ -68,7 +68,7 @@ Q_OUTOFLINE_TEMPLATE TableSet<T>::TableSet(Table *parent) : TableSetBase(parent)
 }
 
 template<class T>
-Q_OUTOFLINE_TEMPLATE Query<T> *TableSet<T>::createQuery()
+Q_OUTOFLINE_TEMPLATE Query<T> *TableSet<T>::query()
 {
     Query<T> *q = new Query<T>(_database, this);
 

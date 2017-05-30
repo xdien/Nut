@@ -116,6 +116,7 @@ public:
     WherePhrase operator <=(const WherePhrase &other);
     WherePhrase operator >=(const WherePhrase &other);
 
+    WherePhrase operator !();
     WherePhrase operator =(const WherePhrase &other);
 
     WherePhrase operator +(const WherePhrase &other);
@@ -149,8 +150,8 @@ public:
     WherePhrase operator !();
 
     WherePhrase isNull();
-    WherePhrase in(QVariantList list);
-    WherePhrase in(QStringList list);
+    WherePhrase in(QList<T> list);
+//    WherePhrase in(QStringList list);
     WherePhrase like(QString pattern);
 };
 
@@ -191,16 +192,20 @@ Q_OUTOFLINE_TEMPLATE WherePhrase FieldPhrase<T>::isNull(){
 }
 
 template<typename T>
-Q_OUTOFLINE_TEMPLATE WherePhrase FieldPhrase<T>::in(QVariantList list)
+Q_OUTOFLINE_TEMPLATE WherePhrase FieldPhrase<T>::in(QList<T> list)
 {
-    return WherePhrase(this, PhraseData::In, list);
+    QVariantList vlist;
+    foreach (T t, list)
+        vlist.append(QVariant::fromValue(t));
+
+    return WherePhrase(this, PhraseData::In, vlist);
 }
 
-template<typename T>
-Q_OUTOFLINE_TEMPLATE WherePhrase FieldPhrase<T>::in(QStringList list)
-{
-    return WherePhrase(this, PhraseData::In, list);
-}
+//template<typename T>
+//Q_OUTOFLINE_TEMPLATE WherePhrase FieldPhrase<T>::in(QStringList list)
+//{
+//    return WherePhrase(this, PhraseData::In, list);
+//}
 
 template<typename T>
 Q_OUTOFLINE_TEMPLATE WherePhrase FieldPhrase<T>::like(QString pattern)

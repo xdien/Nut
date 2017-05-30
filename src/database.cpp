@@ -227,7 +227,7 @@ DatabaseModel DatabasePrivate::getLastScheema()
     //    ChangeLogTable *u = q->_change_logs()->createQuery()->orderBy("id",
     //    "desc")->first();
     ChangeLogTable *u
-        = changeLogs->createQuery()->orderBy("id", "desc")->first();
+        = changeLogs->query()->orderBy("id", "desc")->first();
 
     DatabaseModel ret;
 
