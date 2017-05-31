@@ -43,12 +43,13 @@ class NUT_EXPORT Query : public QueryBase
     QueryPrivate *d_ptr;
     Q_DECLARE_PRIVATE(Query)
 
+    bool m_autoDelete;
+
 public:
-    Query(Database *database, TableSetBase *tableSet);
+    Query(Database *database, TableSetBase *tableSet, bool autoDelete);
 
     ~Query();
 
-    int remove();
     T *first();
 
     int count();
@@ -74,6 +75,7 @@ public:
     Query<T> *orderBy(WherePhrase phrase);
 
     int update(WherePhrase phrase);
+    int remove();
 };
 
 template <typename T>
@@ -82,8 +84,8 @@ inline Query<T> *createQuery(TableSet<T> *tableSet){
 }
 
 template<class T>
-Q_OUTOFLINE_TEMPLATE Query<T>::Query(Database *database, TableSetBase *tableSet) : QueryBase(database),
-    d_ptr(new QueryPrivate(this))
+Q_OUTOFLINE_TEMPLATE Query<T>::Query(Database *database, TableSetBase *tableSet, bool autoDelete) : QueryBase(database),
+    d_ptr(new QueryPrivate(this)), m_autoDelete(autoDelete)
 {
     Q_D(Query);
 
@@ -180,7 +182,8 @@ Q_OUTOFLINE_TEMPLATE QList<T *> Query<T>::toList(int count)
             break;
     }
 
-    deleteLater();
+    if(m_autoDelete)
+        deleteLater();
     return result;
 }
 
@@ -199,12 +202,14 @@ Q_OUTOFLINE_TEMPLATE QList<F> Query<T>::select(const FieldPhrase<F> f)
                     d->joinClassName);
     QSqlQuery q = d->database->exec(sql);
 
+    qDebug() << sql;
     while (q.next()) {
         QVariant v = q.value(f.data()->text);
         ret.append(v.value<F>());
     }
 
-    deleteLater();
+    if(m_autoDelete)
+        deleteLater();
     return ret;
 }
 
@@ -268,18 +273,6 @@ Q_OUTOFLINE_TEMPLATE QVariant Query<T>::average(FieldPhrase<int> &f)
 }
 
 template<class T>
-Q_OUTOFLINE_TEMPLATE int Query<T>::remove()
-{
-    Q_D(Query);
-
-    QString sql = d->database->sqlGenertor()->deleteCommand(d->wheres, d->tableName);
-//            d->_database->sqlGenertor()->deleteRecords(_tableName, queryText());
-//    sql = compileCommand(sql);
-    QSqlQuery q = d->database->exec(sql);
-    return q.numRowsAffected();
-}
-
-template<class T>
 Q_OUTOFLINE_TEMPLATE Query<T> *Query<T>::join(const QString &tableName)
 {
     Q_D(Query);
@@ -318,6 +311,22 @@ Q_OUTOFLINE_TEMPLATE int Query<T>::update(WherePhrase phrase)
 
     QString sql = d->database->sqlGenertor()->updateCommand(
                 phrase,
+                d->wheres,
+                d->tableName);
+    qDebug() << sql;
+    QSqlQuery q = d->database->exec(sql);
+
+    if (m_autoDelete)
+        deleteLater();
+    return q.numRowsAffected();
+}
+
+template<class T>
+Q_OUTOFLINE_TEMPLATE int Query<T>::remove()
+{
+    Q_D(Query);
+
+    QString sql = d->database->sqlGenertor()->deleteCommand(
                 d->wheres,
                 d->tableName);
     qDebug() << sql;

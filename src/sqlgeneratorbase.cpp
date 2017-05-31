@@ -20,6 +20,7 @@
 
 #include <QDate>
 #include <QDateTime>
+#include <QPointF>
 #include <QTime>
 #include <QVariant>
 
@@ -477,7 +478,17 @@ QString SqlGeneratorBase::escapeValue(const QVariant &v)const
 
     case QVariant::StringList:
     case QVariant::List:
-        return "['" + v.toStringList().join("', '") + "']";
+        return "('" + v.toStringList().join("', '") + "')";
+
+    case QVariant::Point: {
+        QPoint pt = v.toPoint();
+        return QString("POINT(%1 %2)").arg(pt.x()).arg(pt.y());
+    }
+
+    case QVariant::PointF: {
+        QPointF pt = v.toPointF();
+        return QString("POINT(%1 %2)").arg(pt.x()).arg(pt.y());
+    }
 
     case QVariant::Invalid:
         qFatal("Invalud field value");
