@@ -556,6 +556,40 @@ QString SqlGeneratorBase::phrase(const PhraseData *d) const
     return ret;
 }
 
+QString SqlGeneratorBase::phraseUpdate(const PhraseData *d) const
+{
+    QString ret = "";
+
+    if (d->operatorCond != PhraseData::And && d->operatorCond != PhraseData::Equal)
+        qFatal("Update command does not accept any phrase else &, =");
+
+    switch(d->type){
+    case PhraseData::Field:
+        ret = d->text;
+        break;
+
+    case PhraseData::WithVariant:
+        ret = phrase(d->left) + " " + operatorString(d->operatorCond) + " " + escapeValue(d->operand);
+        break;
+
+    case PhraseData::WithOther:
+        ret = phrase(d->left) + " " + operatorString(d->operatorCond) + " " + phrase(d->right);
+        break;
+
+    case PhraseData::WithoutOperand:
+        ret = phrase(d->left) + " " + operatorString(d->operatorCond);
+        break;
+
+    default:
+        ret = "<FAIL>";
+    }
+
+    if(d->operatorCond == PhraseData::And || d->operatorCond == PhraseData::Or)
+        ret = "(" + ret + ")";
+
+    return ret;
+}
+
 QString SqlGeneratorBase::operatorString(const PhraseData::Condition &cond) const
 {
     switch (cond){
