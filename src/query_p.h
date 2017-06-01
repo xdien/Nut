@@ -38,14 +38,16 @@ class QueryPrivate{
 
 public:
     QueryPrivate(QueryBase *parent);
+    ~QueryPrivate();
+
     QString tableName;
     QString select;
     Database *database;
     TableSetBase *tableSet;
     QString joinClassName;
     QList<WherePhrase> wheres;
-    QHash<QString, QString> orders;
     QList<WherePhrase> orderPhrases;
+    QHash<QString, QString> orders;
 };
 
 NUT_END_NAMESPACE

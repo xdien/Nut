@@ -92,7 +92,9 @@ QStringList SqlGeneratorBase::diff(DatabaseModel lastModel, DatabaseModel newMod
     foreach (QString tableName, tableNames) {
         TableModel *oldTable = lastModel.model(tableName);
         TableModel *newTable = newModel.model(tableName);
-        ret << diff(oldTable, newTable);
+        QString sql = diff(oldTable, newTable);
+        qDebug() << "diff sql"<<sql;
+        ret << sql;
     }
 
     return ret;

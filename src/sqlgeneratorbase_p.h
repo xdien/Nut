@@ -96,6 +96,7 @@ public:
 
     virtual QString escapeValue(const QVariant &v) const;
     virtual QString phrase(const PhraseData *d) const;
+    virtual QString phraseUpdate(const PhraseData *d) const;
     virtual QString operatorString(const PhraseData::Condition &cond) const;
 
 private:

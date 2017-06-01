@@ -28,6 +28,10 @@ QueryPrivate::QueryPrivate(QueryBase *parent) : q_ptr(parent),
 
 }
 
+QueryPrivate::~QueryPrivate()
+{
+}
+
 /*!
   * \class Query
   * \brief This class hold a query. A query can be used for getting database rows, editing or deleting without row fetching.
