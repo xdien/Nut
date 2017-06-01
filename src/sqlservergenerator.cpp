@@ -22,6 +22,7 @@
 #include "table.h"
 #include "tablemodel.h"
 
+#include <QPoint>
 #include <QRegularExpression>
 
 NUT_BEGIN_NAMESPACE
@@ -112,7 +113,13 @@ QString SqlServerGenerator::escapeValue(const QVariant &v) const
 {
     if(v.type() == QVariant::String || v.type() == QVariant::Char)
         return "N'" + v.toString() + "'";
-    else
+    else if (v.type() == QVariant::Point) {
+        QPoint pt = v.toPoint();
+        return QString("geography::POINT(%1, %2, 4326)").arg(pt.x()).arg(pt.y());
+    } else if (v.type() == QVariant::Point) {
+        QPointF pt = v.toPointF();
+        return QString("geography::POINT(%1, %2, 4326)").arg(pt.x()).arg(pt.y());
+    }
         return SqlGeneratorBase::escapeValue(v);
 }
 
