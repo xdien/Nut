@@ -69,6 +69,12 @@ QString SqlServerGenerator::fieldType(FieldModel *field)
         if(field->isAutoIncrement)
             dbType += " identity(1,1)";
         break;
+
+    case QVariant::Point:
+    case QVariant::PointF:
+        dbType = "point";
+        break;
+
     case QVariant::String:
         if(field->length)
             dbType = QString("varchar(%1)").arg(field->length);
