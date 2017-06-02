@@ -480,7 +480,7 @@ bool Database::open(bool updateDatabase)
             if (p.trimmed().startsWith("driver="))
                 driverName = p.split('=').at(1).toLower().trimmed();
 
-        if (driverName == "{sql server}")
+//        if (driverName == "{sql server}")
             d->sqlGenertor = new SqlServerGenerator(this);
         // TODO: add ODBC driver for mysql, postgres, ...
     }

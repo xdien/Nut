@@ -73,7 +73,7 @@ QString SqlServerGenerator::fieldType(FieldModel *field)
 
     case QVariant::Point:
     case QVariant::PointF:
-        dbType = "point";
+        dbType = "GEOMETRY";
         break;
 
     case QVariant::String:
