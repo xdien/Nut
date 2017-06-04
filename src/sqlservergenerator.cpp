@@ -80,7 +80,7 @@ QString SqlServerGenerator::fieldType(FieldModel *field)
         if(field->length)
             dbType = QString("varchar(%1)").arg(field->length);
         else
-            dbType = "text";
+            dbType = "varchar(max)";
         break;
     default:
         dbType = "";
