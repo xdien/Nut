@@ -152,6 +152,7 @@ Q_OUTOFLINE_TEMPLATE QList<T *> Query<T>::toList(int count)
             t->setTableSet(d->tableSet);
             t->setStatus(Table::FeatchedFromDB);
             t->setParent(this);
+            t->clear();
 
             result.append(t);
             lastRow = t;
@@ -175,6 +176,7 @@ Q_OUTOFLINE_TEMPLATE QList<T *> Query<T>::toList(int count)
             childTable->setParentTable(lastRow);
             childTable->setStatus(Table::FeatchedFromDB);
             childTable->setTableSet(childTableSet);
+            childTable->clear();
             childTableSet->add(childTable);
         }
         lastPkValue = q.value(pk);

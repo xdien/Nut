@@ -76,6 +76,7 @@ private:
     TableSetBase *_tableSet;
 
     QSet<TableSetBase*> tableSets;
+    void clear();
 
     template<class T>
     friend class Query;

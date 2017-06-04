@@ -156,13 +156,6 @@ public:
 };
 
 
-//TODO: make FieldPhrase template class
-//template <typename T>
-//class FieldPhrase: public WherePhrase{
-
-//};
-
-
 template<typename T>
 Q_OUTOFLINE_TEMPLATE FieldPhrase<T>::FieldPhrase(const char *className, const char *s) : WherePhrase(className, s)
 {
@@ -213,6 +206,8 @@ Q_OUTOFLINE_TEMPLATE WherePhrase FieldPhrase<T>::like(QString pattern)
     return WherePhrase(this, PhraseData::Like, pattern);
 }
 
+
+// Custom types
 template<>
 class FieldPhrase<DbGeography>: public WherePhrase {
 public:
@@ -225,6 +220,25 @@ public:
     }
 };
 
+template<>
+class FieldPhrase<bool>: public WherePhrase{
+public:
+    FieldPhrase(const char *className, const char* s) : WherePhrase(className, s){
+
+    }
+
+    WherePhrase operator ==(const bool &other) {
+        return WherePhrase(this, PhraseData::Equal, other ? 1 : 0);
+    }
+
+    WherePhrase operator =(const bool &other) {
+        return WherePhrase(this, PhraseData::Set, other ? 1 : 0);
+    }
+
+    WherePhrase operator !() {
+        return WherePhrase(this, PhraseData::Equal, 0);
+    }
+};
 
 NUT_END_NAMESPACE
 

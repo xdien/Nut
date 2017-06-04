@@ -89,6 +89,11 @@ void Table::propertyChanged(QString propName)
         _status = Added;
 }
 
+void Table::clear()
+{
+    _changedProperties.clear();
+}
+
 QSet<QString> Table::changedProperties() const
 {
     return _changedProperties;
