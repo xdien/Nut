@@ -486,7 +486,7 @@ bool Database::open(bool updateDatabase)
     }
 
     if (!d->sqlGenertor) {
-        qWarning("Sql generator for driver %s not found",
+        qFatal("Sql generator for driver %s not found",
                  driver().toLatin1().constData());
         return false;
     } else {
@@ -504,6 +504,7 @@ QSqlQuery Database::exec(QString sql)
 {
     Q_D(Database);
 
+    qInfo("Execute command: %s", qPrintable(sql));
     QSqlQuery q = d->db.exec(sql);
     if (d->db.lastError().type() != QSqlError::NoError)
         qWarning("Error executing sql command: %s; Command=%s",

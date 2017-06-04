@@ -111,7 +111,7 @@ QString SqlGeneratorBase::diff(FieldModel *oldField, FieldModel *newField)
         sql = "DROP COLUMN " + oldField->name;
     }else{
         if(oldField)
-            sql = "ALTER COLUMN ";
+            sql = "MODIFY COLUMN ";
         else
             sql = "ADD COLUMN ";
         sql.append(fieldDeclare(newField));

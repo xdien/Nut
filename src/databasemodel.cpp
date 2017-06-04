@@ -53,13 +53,14 @@ TableModel *DatabaseModel::modelByClass(QString className) const
 {
     for(int i = 0; i < size(); i++){
         TableModel *s = at(i);
+        qDebug() << s->className();
         if(s->className() == className)
             return s;
     }
 
     qWarning("Table with class name '%s' not found in model",
              qUtf8Printable(className));
-    Q_UNREACHABLE();
+//    Q_UNREACHABLE();
     return 0;
 }
 
