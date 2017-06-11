@@ -21,6 +21,9 @@
 #include "mysqlgenerator.h"
 #include "tablemodel.h"
 
+#include <QPoint>
+#include <QPointF>
+
 NUT_BEGIN_NAMESPACE
 
 MySqlGenerator::MySqlGenerator(Database *parent) : SqlGeneratorBase(parent)
@@ -88,6 +91,42 @@ QString MySqlGenerator::fieldType(FieldModel *field)
         dbType = "GEOMETRY";
 
     return dbType;
+}
+
+QString MySqlGenerator::escapeValue(const QVariant &v) const
+{
+    switch (v.type()) {
+    case QVariant::Point: {
+        QPoint pt = v.toPoint();
+        return QString("GeomFromText('POINT(%1 %2)',0)").arg(pt.x()).arg(pt.y());
+    }
+
+    case QVariant::PointF: {
+        QPointF pt = v.toPointF();
+        return QString("GeomFromText('POINT(%1 %2)',0)").arg(pt.x()).arg(pt.y());
+    }
+
+    default:
+        return SqlGeneratorBase::escapeValue(v);
+    }
+}
+
+QVariant MySqlGenerator::readValue(const QVariant::Type &type, const QVariant &dbValue)
+{
+    if (type == QVariant::PointF) {
+        qDebug() << "QVariant::PointF" << dbValue;
+    }
+}
+
+QString MySqlGenerator::phrase(const PhraseData *d) const
+{
+    if (d->operatorCond == PhraseData::Distance) {
+        return QString("ST_Distance(%1, %2)")
+                .arg(d->left->text)
+                .arg(escapeValue(d->operand.toPointF()));
+    }
+
+    return SqlGeneratorBase::phrase(d);
 }
 
 NUT_END_NAMESPACE

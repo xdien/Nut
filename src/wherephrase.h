@@ -27,6 +27,7 @@
 #include <QDate>
 #include <QDateTime>
 #include <QTime>
+#include <QPoint>
 #include <QSharedPointer>
 #include "defines.h"
 #include "dbgeography.h"
@@ -146,7 +147,9 @@ class FieldPhrase: public WherePhrase{
 public:
     FieldPhrase(const char *className, const char* s);
 
+    WherePhrase operator =(const WherePhrase &other);
     WherePhrase operator =(const QVariant &other);
+    WherePhrase operator +(const QVariant &other);
     WherePhrase operator !();
 
     WherePhrase isNull();
@@ -166,6 +169,18 @@ template<typename T>
 Q_OUTOFLINE_TEMPLATE WherePhrase FieldPhrase<T>::operator =(const QVariant &other)
 {
     return WherePhrase(this, PhraseData::Set, other);
+}
+
+template<typename T>
+Q_OUTOFLINE_TEMPLATE WherePhrase FieldPhrase<T>::operator =(const WherePhrase &other)
+{
+    return WherePhrase(this, PhraseData::Set, &other);
+}
+
+template<typename T>
+Q_OUTOFLINE_TEMPLATE WherePhrase FieldPhrase<T>::operator+(const QVariant &other)
+{
+    return WherePhrase(this, PhraseData::Add, other);
 }
 
 template<typename T>
@@ -217,6 +232,38 @@ public:
 
     WherePhrase distance(const DbGeography &geo) {
         return WherePhrase(this, PhraseData::Distance, QVariant::fromValue(geo));
+    }
+};
+
+// Custom types
+template<>
+class FieldPhrase<QPoint>: public WherePhrase {
+public:
+    FieldPhrase(const char *className, const char* s) : WherePhrase(className, s){
+
+    }
+
+    WherePhrase distance(const QPoint &geo) {
+        return WherePhrase(this, PhraseData::Distance, QVariant::fromValue(geo));
+    }
+    WherePhrase operator =(const QPoint &other) {
+        return WherePhrase(this, PhraseData::Set, other);
+    }
+};
+
+// Custom types
+template<>
+class FieldPhrase<QPointF>: public WherePhrase {
+public:
+    FieldPhrase(const char *className, const char* s) : WherePhrase(className, s){
+
+    }
+
+    WherePhrase distance(const QPointF &geo) {
+        return WherePhrase(this, PhraseData::Distance, QVariant::fromValue(geo));
+    }
+    WherePhrase operator =(const QPointF &other) {
+        return WherePhrase(this, PhraseData::Set, other);
     }
 };
 

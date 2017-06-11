@@ -25,6 +25,7 @@
 #include <QtCore/QDebug>
 #include <QtCore/QScopedPointer>
 #include <QtCore/QRegularExpression>
+#include <QtCore/QMetaObject>
 
 #include "query_p.h"
 #include "database.h"
@@ -118,6 +119,7 @@ Q_OUTOFLINE_TEMPLATE QList<T *> Query<T>::toList(int count)
                     d->orderPhrases,
                     d->tableName,
                     d->joinClassName);
+    qDebug() << sql;
     QSqlQuery q = d->database->exec(sql);
 
 //    QString pk = TableModel::findByName(d->tableName)->primaryKey();
@@ -145,9 +147,13 @@ Q_OUTOFLINE_TEMPLATE QList<T *> Query<T>::toList(int count)
     while (q.next()) {
         if(lastPkValue != q.value(pk)){
             T *t = new T();
-
             foreach (QString field, masterFields)
                 t->setProperty(field.toLatin1().data(), q.value(field));
+//            for (int i = 0; i < t->metaObject()->propertyCount(); i++) {
+//                const QMetaProperty p = t->metaObject()->property(i);
+
+//                p.write(t, d->database->sqlGenertor()->readValue(p.type(), q.value(p.name())));
+//            }
 
             t->setTableSet(d->tableSet);
             t->setStatus(Table::FeatchedFromDB);

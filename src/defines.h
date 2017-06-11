@@ -104,7 +104,7 @@ public:                                                                     \
 #define NUT_PRIMARY_AUTO_INCREMENT(x)       NUT_PRIMARY_KEY(x)          \
                                             NUT_AUTO_INCREMENT(x)
 #define NUT_UNIQUE(x)                       Q_CLASSINFO(QT_STRINGIFY(__nut_NAME_PERFIX #x " " __nut_UNIQUE),  #x)
-#define NUT_LEN(x, n)                       Q_CLASSINFO(QT_STRINGIFY(__nut_NAME_PERFIX #x " " __nut_LEN),    #n)
+#define NUT_LEN(field, len)                 Q_CLASSINFO(QT_STRINGIFY(__nut_NAME_PERFIX #field " " __nut_LEN),    #len)
 #define NUT_DEFAULT_VALUE(x, n)             Q_CLASSINFO(QT_STRINGIFY(__nut_NAME_PERFIX #x " " __nut_DEFAULT_VALUE),    #n)
 #define NUT_NOT_NULL(x)                     Q_CLASSINFO(QT_STRINGIFY(__nut_NAME_PERFIX #x " " __nut_NOT_NULL), "1")
 

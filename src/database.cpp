@@ -133,7 +133,7 @@ bool DatabasePrivate::updateDatabase()
     }
     bool ok = db.commit();
 
-    if (ok) {
+    if (db.lastError().type() == QSqlError::NoError) {
         storeScheemaInDB();
 
         q->databaseUpdated(last.versionMajor(), last.versionMinor(),

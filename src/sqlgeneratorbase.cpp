@@ -499,6 +499,11 @@ QString SqlGeneratorBase::escapeValue(const QVariant &v)const
     return "";
 }
 
+QVariant SqlGeneratorBase::readValue(const QVariant::Type &type, const QVariant &dbValue)
+{
+    return dbValue;
+}
+
 QString SqlGeneratorBase::phraseOrder(const PhraseData *d) const
 {
 

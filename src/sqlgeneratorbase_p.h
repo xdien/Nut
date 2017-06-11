@@ -95,6 +95,7 @@ public:
     virtual QString updateCommand(WherePhrase &phrase, QList<WherePhrase> &wheres, QString tableName);
 
     virtual QString escapeValue(const QVariant &v) const;
+    virtual QVariant readValue(const QVariant::Type &type, const QVariant &dbValue);
     virtual QString phrase(const PhraseData *d) const;
     virtual QString phraseUpdate(const PhraseData *d) const;
     virtual QString operatorString(const PhraseData::Condition &cond) const;

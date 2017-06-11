@@ -32,7 +32,9 @@ public:
     MySqlGenerator(Database *parent = 0);
 
     QString fieldType(FieldModel *field);
-
+    QString escapeValue(const QVariant &v) const;
+    QVariant readValue(const QVariant::Type &type, const QVariant &dbValue);
+    QString phrase(const PhraseData *d) const;
 };
 
 NUT_END_NAMESPACE
