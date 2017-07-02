@@ -307,8 +307,6 @@ Database::Database(QObject *parent)
     Q_D(Database);
     // d->changeLogs->sett
     DatabasePrivate::lastId++;
-    //    m__change_logs = new TableSet<ChangeLogTable>(this);
-    qDebug() << "normal constructor called in database";
 }
 
 Database::Database(const Database &other, QObject *parent)
@@ -323,9 +321,6 @@ Database::Database(const Database &other, QObject *parent)
     setDatabaseName(other.databaseName());
     setUserName(other.userName());
     setPassword(other.password());
-
-    qDebug() << "copy constructor called in database";
-    //    m__change_logs = new TableSet<ChangeLogTable>(this);
 }
 
 Database::~Database()
@@ -504,7 +499,6 @@ QSqlQuery Database::exec(QString sql)
 {
     Q_D(Database);
 
-    qInfo("Execute command: %s", qPrintable(sql));
     QSqlQuery q = d->db.exec(sql);
     if (d->db.lastError().type() != QSqlError::NoError)
         qWarning("Error executing sql command: %s; Command=%s",

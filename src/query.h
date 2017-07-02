@@ -119,7 +119,7 @@ Q_OUTOFLINE_TEMPLATE QList<T *> Query<T>::toList(int count)
                     d->orderPhrases,
                     d->tableName,
                     d->joinClassName);
-    qDebug() << sql;
+
     QSqlQuery q = d->database->exec(sql);
 
 //    QString pk = TableModel::findByName(d->tableName)->primaryKey();
@@ -211,7 +211,6 @@ Q_OUTOFLINE_TEMPLATE QList<F> Query<T>::select(const FieldPhrase<F> f)
                     d->joinClassName);
     QSqlQuery q = d->database->exec(sql);
 
-    qDebug() << sql;
     while (q.next()) {
         QVariant v = q.value(f.data()->text);
         ret.append(v.value<F>());
@@ -241,7 +240,6 @@ Q_OUTOFLINE_TEMPLATE int Query<T>::count()
     d->select = "COUNT(*)";
     QSqlQuery q = d->database->exec(d->database->sqlGenertor()->selectCommand("COUNT(*)", d->wheres, d->orders, d->tableName, d->joinClassName));
 
-    qDebug() << "sql="<<d->database->sqlGenertor()->selectCommand("COUNT(*)", d->wheres, d->orders, d->tableName, d->joinClassName);
     if(q.next())
         return q.value(0).toInt();
     return 0;
@@ -322,7 +320,6 @@ Q_OUTOFLINE_TEMPLATE int Query<T>::update(WherePhrase phrase)
                 phrase,
                 d->wheres,
                 d->tableName);
-    qDebug() << sql;
     QSqlQuery q = d->database->exec(sql);
 
     if (m_autoDelete)
@@ -338,7 +335,6 @@ Q_OUTOFLINE_TEMPLATE int Query<T>::remove()
     QString sql = d->database->sqlGenertor()->deleteCommand(
                 d->wheres,
                 d->tableName);
-    qDebug() << sql;
     QSqlQuery q = d->database->exec(sql);
     return q.numRowsAffected();
 }

@@ -155,7 +155,7 @@ TableModel::TableModel(int typeId, QString tableName)
     _typeId = typeId;
     _name = tableName;
     _className = tableMetaObject->className();
-qDebug() << "my name is" << _className;
+
 //#ifdef NUT_NAMESPACE
 //    if(_className.startsWith(QT_STRINGIFY(NUT_NAMESPACE) "::"))
 //        _className = _className.replace(QT_STRINGIFY(NUT_NAMESPACE) "::", "");
@@ -191,10 +191,6 @@ qDebug() << "my name is" << _className;
             continue;
         fieldObj->type = fieldProperty.type();
         fieldObj->typeName = QString(fieldProperty.typeName());
-//        qDebug() <<"fieldProperty.type()"
-//                <<fieldProperty.typeName()
-//                << fieldProperty.type()
-//                << fieldObj->type;
     }
 
     // Browse class infos

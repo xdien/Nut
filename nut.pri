@@ -1,4 +1,4 @@
-QT += core widgets sql
+QT += core sql
 
 INCLUDEPATH += $$PWD/include
 

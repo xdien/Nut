@@ -53,7 +53,7 @@ TableModel *DatabaseModel::modelByClass(QString className) const
 {
     for(int i = 0; i < size(); i++){
         TableModel *s = at(i);
-        qDebug() << s->className();
+
         if(s->className() == className)
             return s;
     }
