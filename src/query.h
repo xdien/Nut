@@ -127,7 +127,7 @@ Q_OUTOFLINE_TEMPLATE QList<T *> Query<T>::toList(int count)
     QVariant lastPkValue = QVariant();
     int childTypeId = 0;
     T *lastRow = 0;
-    TableSetBase *childTableSet;
+    TableSetBase *childTableSet = Q_NULLPTR;
 
     //FIXME: getting table error
 //    QStringList masterFields = TableModel::findByName(d->tableName)->fieldsNames();
@@ -321,7 +321,7 @@ Q_OUTOFLINE_TEMPLATE int Query<T>::update(WherePhrase phrase)
                 d->wheres,
                 d->tableName);
     QSqlQuery q = d->database->exec(sql);
-
+qDebug()<<sql;
     if (m_autoDelete)
         deleteLater();
     return q.numRowsAffected();

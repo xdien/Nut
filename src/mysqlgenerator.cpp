@@ -37,36 +37,36 @@ QString MySqlGenerator::fieldType(FieldModel *field)
 
     switch (field->type) {
     case QVariant::Bool:
-        dbType = "boolean";
+        dbType = "BOOLEAN";
         break;
     case QVariant::ByteArray:
-        dbType = "blob";
+        dbType = "BLOB";
         break;
     case QVariant::DateTime:
-        dbType = "datetime";
+        dbType = "DATETIME";
         break;
 
     case QVariant::Date:
-        dbType = "date";
+        dbType = "DATE";
         break;
 
     case QVariant::Time:
-        dbType = "time";
+        dbType = "TIME";
         break;
     case QVariant::Double:
-        dbType = "real";
+        dbType = "REAL";
         break;
     case QVariant::Int:
-        dbType = "int(4)";
+        dbType = "INT(4)";
         if(field->isAutoIncrement)
-            dbType += " auto_increment";
+            dbType += " AUTO_INCREMENT";
 
         break;
     case QVariant::String:
         if(field->length)
-            dbType = QString("varchar(%1)").arg(field->length);
+            dbType = QString("VARCHAR(%1)").arg(field->length);
         else
-            dbType = "text";
+            dbType = "TEXT";
         break;
 
     case QVariant::Point:
@@ -77,6 +77,10 @@ QString MySqlGenerator::fieldType(FieldModel *field)
     case QVariant::Polygon:
     case QVariant::PolygonF:
         dbType = "POLYGON";
+        break;
+
+    case QVariant::Uuid:
+        dbType = "VARCHAR(64)";
         break;
 
     default:

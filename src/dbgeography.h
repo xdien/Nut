@@ -9,10 +9,6 @@ NUT_BEGIN_NAMESPACE
 
 class NUT_EXPORT DbGeography //: public QObject
 {
-//    Q_PROPERTY(qreal latitude READ latitude WRITE setLatitude NOTIFY
-//                   latitudeChanged)
-//    Q_PROPERTY(qreal longitude READ longitude WRITE setLongitude NOTIFY
-//                   longitudeChanged)
     qreal m_latitude;
     qreal m_longitude;
 
@@ -23,13 +19,11 @@ public:
     qreal latitude() const;
     qreal longitude() const;
 
-//signals:
-//    void latitudeChanged(qreal latitude);
-//    void longitudeChanged(qreal longitude);
-
-//public slots:
     void setLatitude(qreal latitude);
     void setLongitude(qreal longitude);
+
+    QString toString();
+    void fromString(const QString &s);
 };
 
 NUT_END_NAMESPACE

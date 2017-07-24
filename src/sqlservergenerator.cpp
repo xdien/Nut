@@ -43,10 +43,10 @@ QString SqlServerGenerator::fieldType(FieldModel *field)
 
     switch (field->type) {
     case QVariant::Bool:
-        dbType = "bit";
+        dbType = "BIT";
         break;
     case QVariant::ByteArray:
-        dbType = "varbinary";
+        dbType = "VARBINARY";
 
         if(field->length)
             dbType.append(" (" + QString::number(field->length) + ")");
@@ -54,21 +54,21 @@ QString SqlServerGenerator::fieldType(FieldModel *field)
             dbType.append(" (MAX)");
         break;
     case QVariant::Date:
-        dbType = "date";
+        dbType = "DATE";
         break;
     case QVariant::DateTime:
-        dbType = "datetime";
+        dbType = "DATETIME";
         break;
     case QVariant::Time:
-        dbType = "time";
+        dbType = "TIME";
         break;
     case QVariant::Double:
-        dbType = "real";
+        dbType = "REAL";
         break;
     case QVariant::Int:
-        dbType = "int";
+        dbType = "INT";
         if(field->isAutoIncrement)
-            dbType += " identity(1,1)";
+            dbType += " IDENTITY(1,1)";
         break;
 
     case QVariant::Point:
@@ -78,10 +78,15 @@ QString SqlServerGenerator::fieldType(FieldModel *field)
 
     case QVariant::String:
         if(field->length)
-            dbType = QString("varchar(%1)").arg(field->length);
+            dbType = QString("NVARCHAR(%1)").arg(field->length);
         else
-            dbType = "varchar(max)";
+            dbType = "NVARCHAR(MAX)";
         break;
+
+    case QVariant::Uuid:
+        dbType = "UNIQUEIDENTIFIER";
+        break;
+
     default:
         dbType = "";
     }

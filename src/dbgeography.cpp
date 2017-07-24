@@ -2,7 +2,7 @@
 
 NUT_BEGIN_NAMESPACE
 
-DbGeography::DbGeography(QObject *parent) //: QObject(parent)
+DbGeography::DbGeography(QObject *parent)
 {
 
 }
@@ -29,7 +29,6 @@ void DbGeography::setLatitude(qreal latitude)
         return;
 
     m_latitude = latitude;
-//    emit latitudeChanged(latitude);
 }
 
 void DbGeography::setLongitude(qreal longitude)
@@ -38,7 +37,20 @@ void DbGeography::setLongitude(qreal longitude)
         return;
 
     m_longitude = longitude;
-//    emit longitudeChanged(longitude);
+}
+
+QString DbGeography::toString()
+{
+    return QString("%1,%2").arg(longitude()).arg(latitude());
+}
+
+void DbGeography::fromString(const QString &s)
+{
+    QStringList parts = s.split(',');
+    if (parts.count() == 2) {
+        setLongitude(parts[0].toDouble());
+        setLatitude(parts[1].toDouble());
+    }
 }
 
 NUT_END_NAMESPACE

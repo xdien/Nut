@@ -35,39 +35,59 @@ QString PostgreSqlGenerator::fieldType(FieldModel *field)
 
     switch (field->type) {
     case QVariant::Bool:
-        dbType = "boolean";
+        dbType = "BOOLEAN";
         break;
     case QVariant::ByteArray:
-        dbType = "bytea";
+        dbType = "BYTEA";
         break;
     case QVariant::Date:
-        dbType = "date";
+        dbType = "DATE";
         break;
     case QVariant::DateTime:
-        dbType = "timestamp";
+        dbType = "TIMESTAMP";
         break;
     case QVariant::Time:
-        dbType = "time";
+        dbType = "TIME";
         break;
+
     case QVariant::Int:
+    case QVariant::UInt:
         if(field->isAutoIncrement)
-            dbType = "serial";
+            dbType = "SERIAL";
         else
-            dbType = "integer";
+            dbType = "INTEGER";
         break;
+
+    case QVariant::ULongLong:
+    case QVariant::LongLong:
+        if(field->isAutoIncrement)
+            dbType = "BIGSERIAL";
+        else
+            dbType = "BIGINTEGER";
+        break;
+
     case QVariant::Double:
-        dbType = "real";
+        dbType = "REAL";
         break;
     case QVariant::String:
         if(field->length)
-            dbType = QString("varchar(%1)").arg(field->length);
+            dbType = QString("VARCHAR(%1)").arg(field->length);
         else
-            dbType = "text";
+            dbType = "TEXT";
         break;
 
     case QVariant::Point:
     case QVariant::PointF:
-        dbType="point";
+        dbType="POINT";
+        break;
+
+    case QVariant::Uuid:
+        dbType = "UUID";
+        break;
+
+    case QVariant::Polygon:
+    case QVariant::PolygonF:
+        dbType = "POLYGON";
         break;
 
     default:

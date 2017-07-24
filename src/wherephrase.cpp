@@ -200,34 +200,4 @@ WherePhrase WherePhrase::operator&(const WherePhrase &other)
     return WherePhrase(this, PhraseData::Append, (WherePhrase *)&other);
 }
 
-WherePhrase WherePhrase::operator==(const QVariant &other)
-{
-    return WherePhrase(this, PhraseData::Equal, other);
-}
-
-WherePhrase WherePhrase::operator!=(const QVariant &other)
-{
-    return WherePhrase(this, PhraseData::NotEqual, other);
-}
-
-WherePhrase WherePhrase::operator<(const QVariant &other)
-{
-    return WherePhrase(this, PhraseData::Less, other);
-}
-
-WherePhrase WherePhrase::operator>(const QVariant &other)
-{
-    return WherePhrase(this, PhraseData::Greater, other);
-}
-
-WherePhrase WherePhrase::operator<=(const QVariant &other)
-{
-    return WherePhrase(this, PhraseData::LessEqual, other);
-}
-
-WherePhrase WherePhrase::operator>=(const QVariant &other)
-{
-    return WherePhrase(this, PhraseData::GreaterEqual, other);
-}
-
 NUT_END_NAMESPACE
