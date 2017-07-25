@@ -40,6 +40,7 @@ public:
     QueryPrivate(QueryBase *parent);
     ~QueryPrivate();
 
+    QString sql;
     QString tableName;
     QString select;
     Database *database;

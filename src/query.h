@@ -51,18 +51,6 @@ public:
 
     ~Query();
 
-    T *first();
-
-    int count();
-
-    QList<T *> toList(int count = -1);
-
-    template<typename F>
-    QList<F> select(const FieldPhrase<F> f);
-    QVariant max(FieldPhrase<int> &f);
-    QVariant min(FieldPhrase<int> &f);
-    QVariant average(FieldPhrase<int> &f);
-
     Query<T> *join(const QString &tableName);
     Query<T> *setWhere(WherePhrase where);
 
@@ -71,12 +59,22 @@ public:
         return this;
     }
 
-//    Query<T> *setWhere(const QString &where);
     Query<T> *orderBy(QString fieldName, QString type);
     Query<T> *orderBy(WherePhrase phrase);
 
+    int count();
+    QVariant max(FieldPhrase<int> &f);
+    QVariant min(FieldPhrase<int> &f);
+    QVariant average(FieldPhrase<int> &f);
+    T *first();
+    QList<T *> toList(int count = -1);
+    template<typename F>
+    QList<F> select(const FieldPhrase<F> f);
+
     int update(WherePhrase phrase);
     int remove();
+
+    QString sqlCommand() const;
 };
 
 template <typename T>
@@ -93,7 +91,7 @@ Q_OUTOFLINE_TEMPLATE Query<T>::Query(Database *database, TableSetBase *tableSet,
     d->database = database;
     d->tableSet = tableSet;
     d->tableName = //TableModel::findByClassName(T::staticMetaObject.className())->name();
-                d->database->model().modelByClass(T::staticMetaObject.className())->name();
+            d->database->model().modelByClass(T::staticMetaObject.className())->name();
 }
 
 template<class T>
@@ -112,15 +110,16 @@ Q_OUTOFLINE_TEMPLATE QList<T *> Query<T>::toList(int count)
     d->select = "*";
 
 //    QSqlQuery q = d->database->exec(d->database->sqlGenertor()->selectCommand(d->wheres, d->orders, d->tableName, d->joinClassName));
-    QString sql = d->database->sqlGenertor()->selectCommand(
-                    SqlGeneratorBase::SelectAll,
-                    "",
-                    d->wheres,
-                    d->orderPhrases,
-                    d->tableName,
-                    d->joinClassName);
+    d->sql = d->database->sqlGenertor()->selectCommand(
+                SqlGeneratorBase::SelectAll,
+                "",
+                d->wheres,
+                d->orderPhrases,
+                d->tableName,
+                d->joinClassName);
 
-    QSqlQuery q = d->database->exec(sql);
+//    qDebug() << sql;
+    QSqlQuery q = d->database->exec(d->sql);
 
 //    QString pk = TableModel::findByName(d->tableName)->primaryKey();
     QString pk = d->database->model().model(d->tableName)->primaryKey();
@@ -202,14 +201,14 @@ Q_OUTOFLINE_TEMPLATE QList<F> Query<T>::select(const FieldPhrase<F> f)
 {
     Q_D(Query);
     QList<F> ret;
-    QString sql = d->database->sqlGenertor()->selectCommand(
+    d->sql = d->database->sqlGenertor()->selectCommand(
                     SqlGeneratorBase::SignleField,
                     f.data()->text,
                     d->wheres,
                     d->orderPhrases,
                     d->tableName,
                     d->joinClassName);
-    QSqlQuery q = d->database->exec(sql);
+    QSqlQuery q = d->database->exec(d->sql);
 
     while (q.next()) {
         QVariant v = q.value(f.data()->text);
@@ -238,7 +237,8 @@ Q_OUTOFLINE_TEMPLATE int Query<T>::count()
     Q_D(Query);
 
     d->select = "COUNT(*)";
-    QSqlQuery q = d->database->exec(d->database->sqlGenertor()->selectCommand("COUNT(*)", d->wheres, d->orders, d->tableName, d->joinClassName));
+    d->sql = d->database->sqlGenertor()->selectCommand("COUNT(*)", d->wheres, d->orders, d->tableName, d->joinClassName);
+    QSqlQuery q = d->database->exec(d->sql);
 
     if(q.next())
         return q.value(0).toInt();
@@ -249,7 +249,8 @@ template<class T>
 Q_OUTOFLINE_TEMPLATE QVariant Query<T>::max(FieldPhrase<int> &f){
     Q_D(Query);
 
-    QSqlQuery q = d->database->exec(d->database->sqlGenertor()->selectCommand("MAX(" + f.data()->text + ")", d->wheres, d->orders, d->tableName, d->joinClassName));
+    d->sql = d->database->sqlGenertor()->selectCommand("MAX(" + f.data()->text + ")", d->wheres, d->orders, d->tableName, d->joinClassName);
+    QSqlQuery q = d->database->exec(d->sql);
 
     if(q.next())
         return q.value(0).toInt();
@@ -260,7 +261,8 @@ template<class T>
 Q_OUTOFLINE_TEMPLATE QVariant Query<T>::min(FieldPhrase<int> &f){
     Q_D(Query);
 
-    QSqlQuery q = d->database->exec(d->database->sqlGenertor()->selectCommand("MIN(" + f.data()->text + ")", d->wheres, d->orders, d->tableName, d->joinClassName));
+    d->sql = d->database->sqlGenertor()->selectCommand("MIN(" + f.data()->text + ")", d->wheres, d->orders, d->tableName, d->joinClassName);
+    QSqlQuery q = d->database->exec(d->sql);
 
     if(q.next())
         return q.value(0).toInt();
@@ -272,7 +274,8 @@ Q_OUTOFLINE_TEMPLATE QVariant Query<T>::average(FieldPhrase<int> &f)
 {
     Q_D(Query);
 
-    QSqlQuery q = d->database->exec(d->database->sqlGenertor()->selectCommand("AVG(" + f.data()->text + ")", d->wheres, d->orders, d->tableName, d->joinClassName));
+    d->sql = d->database->sqlGenertor()->selectCommand("AVG(" + f.data()->text + ")", d->wheres, d->orders, d->tableName, d->joinClassName);
+    QSqlQuery q = d->database->exec(d->sql);
 
     if(q.next())
         return q.value(0).toInt();
@@ -316,12 +319,12 @@ Q_OUTOFLINE_TEMPLATE int Query<T>::update(WherePhrase phrase)
 {
     Q_D(Query);
 
-    QString sql = d->database->sqlGenertor()->updateCommand(
+    d->sql = d->database->sqlGenertor()->updateCommand(
                 phrase,
                 d->wheres,
                 d->tableName);
-    QSqlQuery q = d->database->exec(sql);
-qDebug()<<sql;
+    QSqlQuery q = d->database->exec(d->sql);
+
     if (m_autoDelete)
         deleteLater();
     return q.numRowsAffected();
@@ -332,11 +335,21 @@ Q_OUTOFLINE_TEMPLATE int Query<T>::remove()
 {
     Q_D(Query);
 
-    QString sql = d->database->sqlGenertor()->deleteCommand(
+    d->sql = d->database->sqlGenertor()->deleteCommand(
                 d->wheres,
                 d->tableName);
-    QSqlQuery q = d->database->exec(sql);
+    QSqlQuery q = d->database->exec(d->sql);
+
+    if (m_autoDelete)
+        deleteLater();
     return q.numRowsAffected();
+}
+
+template<class T>
+Q_OUTOFLINE_TEMPLATE QString Query<T>::sqlCommand() const
+{
+    Q_D(const Query);
+    return d->sql;
 }
 
 NUT_END_NAMESPACE

@@ -392,7 +392,7 @@ public:
     }
 };
 
-#define SPECIALIZATION_NUMERIC(type)                                                             \
+#define SPECIALIZATION_NUMERIC(type)                                           \
     template<>                                                                 \
     class FieldPhrase<type>: public NumericFieldPhrase{                        \
     public:                                                                    \
@@ -402,18 +402,25 @@ public:
         {                                                                      \
             return WherePhrase(this, PhraseData::Set, (WherePhrase *)&other);  \
         }                                                                      \
-        WherePhrase in(QList<type> list)                                      \
+        WherePhrase in(QList<type> list)                                       \
         {                                                                      \
             QVariantList vlist;                                                \
-            foreach (type t, list)                                                \
+            foreach (type t, list)                                             \
                 vlist.append(QVariant::fromValue(t));                          \
             return WherePhrase(this, PhraseData::In, vlist);                   \
         }                                                                      \
     };
 
+SPECIALIZATION_NUMERIC(qint8)
 SPECIALIZATION_NUMERIC(qint16)
 SPECIALIZATION_NUMERIC(qint32)
 SPECIALIZATION_NUMERIC(qint64)
+
+SPECIALIZATION_NUMERIC(quint8)
+SPECIALIZATION_NUMERIC(quint16)
+SPECIALIZATION_NUMERIC(quint32)
+SPECIALIZATION_NUMERIC(quint64)
+
 SPECIALIZATION_NUMERIC(qreal)
 
 
