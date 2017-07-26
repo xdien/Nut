@@ -32,13 +32,15 @@
 #include "defines.h"
 #include "dbgeography.h"
 
+#include <initializer_list>
+
 NUT_BEGIN_NAMESPACE
 
 class SqlGeneratorBase;
-class PhraseData{
+class PhraseData
+{
 public:
-    enum Condition
-    {
+    enum Condition {
         NotAssign = 0,
         Equal,
         Less,
@@ -58,7 +60,6 @@ public:
         And = 20,
         Or,
 
-
         Append,
         Set,
 
@@ -67,16 +68,11 @@ public:
         Multiple,
         Divide,
 
-        //special types
+        // special types
         Distance
     };
 
-    enum Type{
-        Field,
-        WithVariant,
-        WithOther,
-        WithoutOperand
-    };
+    enum Type { Field, WithVariant, WithOther, WithoutOperand };
     Type type;
 
     Condition operatorCond;
@@ -86,7 +82,7 @@ public:
     const PhraseData *right;
     QVariant operand;
 
-    PhraseData(const char *className, const char* s);
+    PhraseData(const char *className, const char *s);
     PhraseData(PhraseData *l, Condition o);
     PhraseData(PhraseData *l, Condition o, const PhraseData *r);
     PhraseData(PhraseData *l, Condition o, QVariant r);
@@ -94,13 +90,14 @@ public:
     ~PhraseData();
 };
 
-class WherePhrase{
+class WherePhrase
+{
 protected:
     PhraseData *_data;
     QSharedPointer<PhraseData> _dataPointer;
 
 public:
-    WherePhrase(const char *className, const char* s);
+    WherePhrase(const char *className, const char *s);
 
     WherePhrase(const WherePhrase &l);
     WherePhrase(WherePhrase *l);
@@ -110,130 +107,151 @@ public:
 
     ~WherePhrase();
 
-    WherePhrase operator ==(const WherePhrase &other);
-    WherePhrase operator !=(const WherePhrase &other);
-    WherePhrase operator <(const WherePhrase &other);
-    WherePhrase operator >(const WherePhrase &other);
-    WherePhrase operator <=(const WherePhrase &other);
-    WherePhrase operator >=(const WherePhrase &other);
+    WherePhrase operator==(const WherePhrase &other);
+    WherePhrase operator!=(const WherePhrase &other);
+    WherePhrase operator<(const WherePhrase &other);
+    WherePhrase operator>(const WherePhrase &other);
+    WherePhrase operator<=(const WherePhrase &other);
+    WherePhrase operator>=(const WherePhrase &other);
 
-    WherePhrase operator !();
-    WherePhrase operator =(const WherePhrase &other);
+    WherePhrase operator==(const QVariant &other);
+    WherePhrase operator!=(const QVariant &other);
+    WherePhrase operator<(const QVariant &other);
+    WherePhrase operator>(const QVariant &other);
+    WherePhrase operator<=(const QVariant &other);
+    WherePhrase operator>=(const QVariant &other);
 
-    WherePhrase operator +(const WherePhrase &other);
-    WherePhrase operator -(const WherePhrase &other);
-    WherePhrase operator *(const WherePhrase &other);
-    WherePhrase operator /(const WherePhrase &other);
+    WherePhrase operator!();
+    WherePhrase operator=(const WherePhrase &other);
 
-    WherePhrase operator &&(const WherePhrase &other);
-    WherePhrase operator ||(const WherePhrase &other);
+    WherePhrase operator+(const WherePhrase &other);
+    WherePhrase operator-(const WherePhrase &other);
+    WherePhrase operator*(const WherePhrase &other);
+    WherePhrase operator/(const WherePhrase &other);
 
-    WherePhrase operator &(const WherePhrase &other);
+    WherePhrase operator&&(const WherePhrase &other);
+    WherePhrase operator||(const WherePhrase &other);
+
+    WherePhrase operator&(const WherePhrase &other);
 
     PhraseData *data() const;
 };
 
-template<typename T>
-class FieldPhrase: public WherePhrase{
+template <typename T>
+class FieldPhrase : public WherePhrase
+{
 public:
-    FieldPhrase(const char *className, const char* s);
+    FieldPhrase(const char *className, const char *s);
 
-    WherePhrase operator =(const WherePhrase &other);
-    WherePhrase operator =(const QVariant &other);
-    WherePhrase operator +(const QVariant &other);
-    WherePhrase operator !();
+    WherePhrase operator=(const WherePhrase &other);
+    WherePhrase operator=(const QVariant &other);
+    WherePhrase operator+(const QVariant &other);
+    WherePhrase operator!();
 
-    WherePhrase operator ==(const QVariant &other);
-    WherePhrase operator !=(const QVariant &other);
-    WherePhrase operator <(const QVariant &other);
-    WherePhrase operator >(const QVariant &other);
-    WherePhrase operator <=(const QVariant &other);
-    WherePhrase operator >=(const QVariant &other);
+    WherePhrase operator==(const QVariant &other);
+    WherePhrase operator!=(const QVariant &other);
+    WherePhrase operator<(const QVariant &other);
+    WherePhrase operator>(const QVariant &other);
+    WherePhrase operator<=(const QVariant &other);
+    WherePhrase operator>=(const QVariant &other);
 
     WherePhrase isNull();
     WherePhrase in(QList<T> list);
-//    WherePhrase in(QStringList list);
+    //    WherePhrase in(QStringList list);
     WherePhrase like(QString pattern);
 };
 
-
-template<typename T>
-Q_OUTOFLINE_TEMPLATE FieldPhrase<T>::FieldPhrase(const char *className, const char *s) : WherePhrase(className, s)
+template <typename T>
+Q_OUTOFLINE_TEMPLATE FieldPhrase<T>::FieldPhrase(const char *className,
+                                                 const char *s)
+    : WherePhrase(className, s)
 {
-//    qDebug() << "(" << this << ")" << "FieldPhrase ctor" << className << s;
+    //    qDebug() << "(" << this << ")" << "FieldPhrase ctor" << className <<
+    //    s;
 }
 
-template<typename T>
-Q_OUTOFLINE_TEMPLATE WherePhrase FieldPhrase<T>::operator =(const QVariant &other)
+template <typename T>
+Q_OUTOFLINE_TEMPLATE WherePhrase FieldPhrase<T>::
+operator=(const QVariant &other)
 {
     return WherePhrase(this, PhraseData::Set, other);
 }
 
-template<typename T>
-Q_OUTOFLINE_TEMPLATE WherePhrase FieldPhrase<T>::operator =(const WherePhrase &other)
+template <typename T>
+Q_OUTOFLINE_TEMPLATE WherePhrase FieldPhrase<T>::
+operator=(const WherePhrase &other)
 {
     return WherePhrase(this, PhraseData::Set, &other);
 }
 
-template<typename T>
-Q_OUTOFLINE_TEMPLATE WherePhrase FieldPhrase<T>::operator+(const QVariant &other)
+template <typename T>
+Q_OUTOFLINE_TEMPLATE WherePhrase FieldPhrase<T>::
+operator+(const QVariant &other)
 {
     return WherePhrase(this, PhraseData::Add, other);
 }
 
-template<typename T>
-Q_OUTOFLINE_TEMPLATE WherePhrase FieldPhrase<T>::operator !()
+template <typename T>
+Q_OUTOFLINE_TEMPLATE WherePhrase FieldPhrase<T>::operator!()
 {
-    if(_data->operatorCond < 20)
-        _data->operatorCond = (PhraseData::Condition)((_data->operatorCond + 10) % 20);
+    if (_data->operatorCond < 20)
+        _data->operatorCond
+            = (PhraseData::Condition)((_data->operatorCond + 10) % 20);
     else
         qFatal("Operator ! can not aplied to non condition statements");
 
-    return this;//WherePhrase(this, PhraseData::Not);
+    return this; // WherePhrase(this, PhraseData::Not);
 }
 
-template<typename T>
-Q_OUTOFLINE_TEMPLATE WherePhrase FieldPhrase<T>::operator==(const QVariant &other)
+template <typename T>
+Q_OUTOFLINE_TEMPLATE WherePhrase FieldPhrase<T>::
+operator==(const QVariant &other)
 {
     return WherePhrase(this, PhraseData::Equal, other);
 }
 
-template<typename T>
-Q_OUTOFLINE_TEMPLATE WherePhrase FieldPhrase<T>::operator!=(const QVariant &other)
+template <typename T>
+Q_OUTOFLINE_TEMPLATE WherePhrase FieldPhrase<T>::
+operator!=(const QVariant &other)
 {
     return WherePhrase(this, PhraseData::NotEqual, other);
 }
 
-template<typename T>
-Q_OUTOFLINE_TEMPLATE WherePhrase FieldPhrase<T>::operator<(const QVariant &other)
+template <typename T>
+Q_OUTOFLINE_TEMPLATE WherePhrase FieldPhrase<T>::
+operator<(const QVariant &other)
 {
     return WherePhrase(this, PhraseData::Less, other);
 }
 
-template<typename T>
-Q_OUTOFLINE_TEMPLATE WherePhrase FieldPhrase<T>::operator>(const QVariant &other)
+template <typename T>
+Q_OUTOFLINE_TEMPLATE WherePhrase FieldPhrase<T>::
+operator>(const QVariant &other)
 {
     return WherePhrase(this, PhraseData::Greater, other);
 }
 
-template<typename T>
-Q_OUTOFLINE_TEMPLATE WherePhrase FieldPhrase<T>::operator<=(const QVariant &other)
+template <typename T>
+Q_OUTOFLINE_TEMPLATE WherePhrase FieldPhrase<T>::
+operator<=(const QVariant &other)
 {
     return WherePhrase(this, PhraseData::LessEqual, other);
 }
 
-template<typename T>
-Q_OUTOFLINE_TEMPLATE WherePhrase FieldPhrase<T>::operator>=(const QVariant &other)
+template <typename T>
+Q_OUTOFLINE_TEMPLATE WherePhrase FieldPhrase<T>::
+operator>=(const QVariant &other)
 {
     return WherePhrase(this, PhraseData::GreaterEqual, other);
 }
 
-template<typename T>
-Q_OUTOFLINE_TEMPLATE WherePhrase FieldPhrase<T>::isNull(){
+template <typename T>
+Q_OUTOFLINE_TEMPLATE WherePhrase FieldPhrase<T>::isNull()
+{
     return WherePhrase(this, PhraseData::Null);
 }
 
-template<typename T>
+template <typename T>
 Q_OUTOFLINE_TEMPLATE WherePhrase FieldPhrase<T>::in(QList<T> list)
 {
     QVariantList vlist;
@@ -243,69 +261,82 @@ Q_OUTOFLINE_TEMPLATE WherePhrase FieldPhrase<T>::in(QList<T> list)
     return WherePhrase(this, PhraseData::In, vlist);
 }
 
-//template<typename T>
-//Q_OUTOFLINE_TEMPLATE WherePhrase FieldPhrase<T>::in(QStringList list)
+// template<typename T>
+// Q_OUTOFLINE_TEMPLATE WherePhrase FieldPhrase<T>::in(QStringList list)
 //{
 //    return WherePhrase(this, PhraseData::In, list);
 //}
 
-template<typename T>
+template <typename T>
 Q_OUTOFLINE_TEMPLATE WherePhrase FieldPhrase<T>::like(QString pattern)
 {
     return WherePhrase(this, PhraseData::Like, pattern);
 }
 
-
 // Custom types
-template<>
-class FieldPhrase<DbGeography>: public WherePhrase {
+template <>
+class FieldPhrase<DbGeography> : public WherePhrase
+{
 public:
-    FieldPhrase(const char *className, const char* s) : WherePhrase(className, s){
-
+    FieldPhrase(const char *className, const char *s)
+        : WherePhrase(className, s)
+    {
     }
 
-    WherePhrase distance(const DbGeography &geo) {
-        return WherePhrase(this, PhraseData::Distance, QVariant::fromValue(geo));
+    WherePhrase distance(const DbGeography &geo)
+    {
+        return WherePhrase(this, PhraseData::Distance,
+                           QVariant::fromValue(geo));
     }
 };
 
 // Custom types
-template<>
-class FieldPhrase<QPoint>: public WherePhrase {
+template <>
+class FieldPhrase<QPoint> : public WherePhrase
+{
 public:
-    FieldPhrase(const char *className, const char* s) : WherePhrase(className, s){
-
+    FieldPhrase(const char *className, const char *s)
+        : WherePhrase(className, s)
+    {
     }
 
-    WherePhrase distance(const QPoint &geo) {
-        return WherePhrase(this, PhraseData::Distance, QVariant::fromValue(geo));
+    WherePhrase distance(const QPoint &geo)
+    {
+        return WherePhrase(this, PhraseData::Distance,
+                           QVariant::fromValue(geo));
     }
-    WherePhrase operator =(const QPoint &other) {
+    WherePhrase operator=(const QPoint &other)
+    {
         return WherePhrase(this, PhraseData::Set, other);
     }
 };
 
 // Custom types
-template<>
-class FieldPhrase<QPointF>: public WherePhrase {
+template <>
+class FieldPhrase<QPointF> : public WherePhrase
+{
 public:
-    FieldPhrase(const char *className, const char* s) : WherePhrase(className, s){
-
+    FieldPhrase(const char *className, const char *s)
+        : WherePhrase(className, s)
+    {
     }
 
-    WherePhrase distance(const QPointF &geo) {
-        return WherePhrase(this, PhraseData::Distance, QVariant::fromValue(geo));
+    WherePhrase distance(const QPointF &geo)
+    {
+        return WherePhrase(this, PhraseData::Distance,
+                           QVariant::fromValue(geo));
     }
-    WherePhrase operator =(const QPointF &other) {
+    WherePhrase operator=(const QPointF &other)
+    {
         return WherePhrase(this, PhraseData::Set, other);
     }
 };
 
-
-//template<>
-//class FieldPhrase<QString>: public WherePhrase {
-//public:
-//    FieldPhrase(const char *className, const char* s) : WherePhrase(className, s){
+// template<>
+// class FieldPhrase<QString>: public WherePhrase {
+// public:
+//    FieldPhrase(const char *className, const char* s) : WherePhrase(className,
+//    s){
 
 //    }
 
@@ -315,73 +346,90 @@ public:
 //    }
 //};
 
-
-template<>
-class FieldPhrase<bool>: public WherePhrase{
+template <>
+class FieldPhrase<bool> : public WherePhrase
+{
 public:
-    FieldPhrase(const char *className, const char* s) : WherePhrase(className, s){
-
+    FieldPhrase(const char *className, const char *s)
+        : WherePhrase(className, s)
+    {
     }
 
-    WherePhrase operator ==(const bool &other) {
+    WherePhrase operator==(const bool &other)
+    {
         return WherePhrase(this, PhraseData::Equal, other ? 1 : 0);
     }
 
-    WherePhrase operator =(const bool &other) {
+    WherePhrase operator=(const bool &other)
+    {
         return WherePhrase(this, PhraseData::Set, other ? 1 : 0);
     }
 
-    WherePhrase operator !() {
+    WherePhrase operator!()
+    {
         return WherePhrase(this, PhraseData::Equal, 0);
     }
 };
 
-class NumericFieldPhrase: public WherePhrase{
+class NumericFieldPhrase : public WherePhrase
+{
 public:
-    NumericFieldPhrase(const char *className, const char* s) : WherePhrase(className, s) { }
+    NumericFieldPhrase(const char *className, const char *s)
+        : WherePhrase(className, s)
+    {
+    }
 
-    WherePhrase operator =(const QVariant &other)
+    WherePhrase operator=(const QVariant &other)
     {
         return WherePhrase(this, PhraseData::Set, other);
     }
 
-    WherePhrase operator +(const QVariant &other)
+    WherePhrase operator+(const QVariant &other)
     {
         return WherePhrase(this, PhraseData::Add, other);
     }
 
-    WherePhrase operator -(const QVariant &other)
+    WherePhrase operator-(const QVariant &other)
     {
         return WherePhrase(this, PhraseData::Minus, other);
     }
 
+    WherePhrase operator++()
+    {
+        return WherePhrase(this, PhraseData::Add, 1);
+    }
 
-    WherePhrase operator ==(const QVariant &other)
+    WherePhrase operator--()
+    {
+        return WherePhrase(this, PhraseData::Minus, 1);
+    }
+
+    WherePhrase operator==(const QVariant &other)
     {
         return WherePhrase(this, PhraseData::Equal, other);
     }
 
-    WherePhrase operator !=(const QVariant &other)
+    WherePhrase operator!=(const QVariant &other)
     {
         return WherePhrase(this, PhraseData::NotEqual, other);
     }
 
-    WherePhrase operator <(const QVariant &other)
+    WherePhrase operator<(const QVariant &other)
     {
         return WherePhrase(this, PhraseData::Less, other);
     }
 
-    WherePhrase operator >(const QVariant &other)
+    WherePhrase operator>(const QVariant &other)
     {
         return WherePhrase(this, PhraseData::Greater, other);
     }
 
-    WherePhrase operator <=(const QVariant &other)
+    WherePhrase operator<=(const QVariant &other)
     {
         return WherePhrase(this, PhraseData::LessEqual, other);
     }
 
-    WherePhrase operator >=(const QVariant &other)
+    WherePhrase operator>=(const QVariant &other)
     {
         return WherePhrase(this, PhraseData::GreaterEqual, other);
     }
@@ -390,24 +438,50 @@ public:
     {
         return WherePhrase(this, PhraseData::Null);
     }
+
+    template<typename T>
+    WherePhrase in(QList<T> list)
+    {
+        QVariantList vlist;
+        foreach (T t, list)
+            vlist.append(QVariant::fromValue(t));
+        return WherePhrase(this, PhraseData::In, vlist);
+    }
+
+    template<typename T>
+    WherePhrase in(std::initializer_list<T> list)
+    {
+        return in(QList<T>(list));
+    }
+
+    WherePhrase in(int count, ...)
+    {
+        QVariantList vlist;
+
+        va_list ap;
+        va_start(ap, count);
+
+        for (int i = 0; i < count; ++i)
+            vlist.append(QVariant::fromValue(va_arg(ap, int)));
+
+        va_end(ap);
+
+        return WherePhrase(this, PhraseData::In, vlist);
+    }
 };
 
 #define SPECIALIZATION_NUMERIC(type)                                           \
-    template<>                                                                 \
-    class FieldPhrase<type>: public NumericFieldPhrase{                        \
+    template <>                                                                \
+    class FieldPhrase<type> : public NumericFieldPhrase                        \
+    {                                                                          \
     public:                                                                    \
-        FieldPhrase(const char *className, const char* s)                      \
-            : NumericFieldPhrase(className, s) { }                             \
-        WherePhrase operator =(const WherePhrase &other)                       \
+        FieldPhrase(const char *className, const char *s)                      \
+            : NumericFieldPhrase(className, s)                                 \
+        {                                                                      \
+        }                                                                      \
+        WherePhrase operator=(const WherePhrase &other)                        \
         {                                                                      \
             return WherePhrase(this, PhraseData::Set, (WherePhrase *)&other);  \
-        }                                                                      \
-        WherePhrase in(QList<type> list)                                       \
-        {                                                                      \
-            QVariantList vlist;                                                \
-            foreach (type t, list)                                             \
-                vlist.append(QVariant::fromValue(t));                          \
-            return WherePhrase(this, PhraseData::In, vlist);                   \
         }                                                                      \
     };
 
@@ -422,7 +496,6 @@ SPECIALIZATION_NUMERIC(quint32)
 SPECIALIZATION_NUMERIC(quint64)
 
 SPECIALIZATION_NUMERIC(qreal)
-
 
 NUT_END_NAMESPACE
 
