@@ -117,8 +117,6 @@ Q_OUTOFLINE_TEMPLATE QList<T *> Query<T>::toList(int count)
                 d->orderPhrases,
                 d->tableName,
                 d->joinClassName);
-
-//    qDebug() << sql;
     QSqlQuery q = d->database->exec(d->sql);
 
 //    QString pk = TableModel::findByName(d->tableName)->primaryKey();
