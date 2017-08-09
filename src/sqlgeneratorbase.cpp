@@ -285,6 +285,9 @@ QString SqlGeneratorBase::deleteRecords(QString tableName, QString where)
         sql = "DELETE FROM " + tableName;
     else
         sql = "DELETE FROM " + tableName + " WHERE " + where;
+
+    replaceTableNames(sql);
+
     return sql;
 }
 
@@ -311,6 +314,8 @@ QString SqlGeneratorBase::selectCommand(SqlGeneratorBase::AgregateType t, QStrin
 
     for(int i = 0; i < _database->model().count(); i++)
         sql = sql.replace(_database->model().at(i)->className() + "." , _database->model().at(i)->name() + ".");
+
+    replaceTableNames(sql);
 
     return sql;
 }
@@ -340,6 +345,8 @@ QString SqlGeneratorBase::selectCommand(QString selectPhrase, QString agregateAr
     for(int i = 0; i < _database->model().count(); i++)
         sql = sql.replace(_database->model().at(i)->className() + "." , _database->model().at(i)->name() + ".");
 
+    replaceTableNames(sql);
+
     return sql;
 }
 
@@ -366,6 +373,12 @@ QString SqlGeneratorBase::createWhere(QList<WherePhrase> &wheres)
 //        whereText.prepend(" WHERE ");
 
     return whereText;
+}
+
+void SqlGeneratorBase::replaceTableNames(QString &command)
+{
+    foreach (TableModel *m, TableModel::allModels())
+        command = command.replace("[" + m->className() + "]." , m->name() + ".");
 }
 
 QString SqlGeneratorBase::selectCommand(QString selectPhrase, QList<WherePhrase> &wheres, QHash<QString, QString> &orders, QString tableName, QString joinClassName)
@@ -414,8 +427,7 @@ QString SqlGeneratorBase::selectCommand(QString selectPhrase, QList<WherePhrase>
             + whereText
             + orderText;
 
-    foreach (TableModel *m, TableModel::allModels())
-        command = command.replace(m->className() + "." , m->name() + ".");
+    replaceTableNames(command);
 
     return command;
 }
@@ -430,6 +442,9 @@ QString SqlGeneratorBase::deleteCommand(QList<WherePhrase> &wheres, QString tabl
 
     for(int i = 0; i < _database->model().count(); i++)
         command = command.replace(_database->model().at(i)->className() + "." , _database->model().at(i)->name() + ".");
+
+    replaceTableNames(command);
+
     return command;
 }
 

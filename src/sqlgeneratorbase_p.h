@@ -105,6 +105,7 @@ private:
     QString fromTableText(const QString &tableName, QString &joinClassName, QString &orderBy) const;
     QString createWhere(QList<WherePhrase> &wheres);
     QString phraseOrder(const PhraseData *d) const;
+    void replaceTableNames(QString &command);
 };
 
 NUT_END_NAMESPACE

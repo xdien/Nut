@@ -28,7 +28,7 @@ NUT_BEGIN_NAMESPACE
 PhraseData::PhraseData(const char *className, const char *s)
 {
     Q_UNUSED(className)
-    text = QString(s); // QString(className) + "." + s;
+    text = QString("[%1].%2").arg(className).arg(s);
     type = Field;
     operatorCond = NotAssign;
 }

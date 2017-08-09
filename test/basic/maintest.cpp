@@ -33,11 +33,6 @@ void MainTest::initTestCase()
     bool ok = db.open();
 
     QTEST_ASSERT(ok);
-
-//    FROM(db.comments())
-//            DELETE();
-//    FROM(db.posts())
-//            DELETE();
 }
 
 void MainTest::dataScheema()
@@ -96,10 +91,7 @@ void MainTest::createPost2()
 
 void MainTest::selectPosts()
 {
-//    auto q = FROM(db.posts())
-//        JOIN(Comment)
-//        WHERE(Post::idField() == postId);
-    auto q = db.posts()->createQuery();
+    auto q = db.posts()->query();
     q->join(Post::commentsTable());
     q->orderBy(!Post::saveDateField() & Post::bodyField());
     q->setWhere(Post::idField() == postId);
@@ -121,20 +113,11 @@ void MainTest::selectPosts()
 
 void MainTest::selectPostsWithoutTitle()
 {
-    auto q = db.posts()->createQuery();
+    auto q = db.posts()->query();
     q->setWhere(Post::titleField().isNull());
     auto count = q->count();
     qDebug() << "selectPostsWithoutTitle, count=" << count;
     QTEST_ASSERT(count == 0);
-}
-
-void MainTest::selectComments()
-{
-    auto comments = FROM(post->comments())
-            SELECT();
-
-    qDebug() << "comments count"<<comments.count();
-//    QTEST_ASSERT(comments.count());
 }
 
 void MainTest::testDate()
@@ -151,9 +134,9 @@ void MainTest::testDate()
 
     db.saveChanges();
 
-    auto q = FROM(db.posts())
-            WHERE(Post::idField() == newPost->id())
-            FIRST();
+    auto q = db.posts()->query()
+            ->setWhere(Post::idField() == newPost->id())
+            ->first();
 
     QTEST_ASSERT(q->saveDate() == d);
 }
@@ -161,21 +144,21 @@ void MainTest::testDate()
 
 void MainTest::selectWithInvalidRelation()
 {
-    auto q = db.posts()->createQuery();
+    auto q = db.posts()->query();
     q->join("Invalid_Class_Name");
     q->toList();
 }
 
 void MainTest::select10NewstPosts()
 {
-    auto q = db.posts()->createQuery();
+    auto q = db.posts()->query();
     q->orderBy(!Post::saveDateField());
     q->toList(10);
 }
 
 void MainTest::modifyPost()
 {
-    auto q = db.posts()->createQuery();
+    auto q = db.posts()->query();
     q->setWhere(Post::idField() == postId);
 
     Post *post = q->first();
@@ -185,24 +168,24 @@ void MainTest::modifyPost()
     post->setTitle("new name");
     db.saveChanges();
 
-    q = FROM(db.posts())
-            WHERE(Post::idField() == postId);
+    q = db.posts()->query()
+            ->setWhere(Post::idField() == postId);
 
     post = q->first();
     QTEST_ASSERT(post->title() == "new name");
 }
 
-void MainTest::deletePost()
+void MainTest::emptyDatabase()
 {
-    auto count = FROM(db.posts())
-            WHERE(Post::idField() == postId)
-            DELETE();
+    auto count = db.posts()->query()
+            ->setWhere(Post::idField() == postId)
+            ->remove();
 
     QTEST_ASSERT(count == 1);
 
-    count = FROM(db.posts())
-            WHERE(Post::idField() == postId)
-            COUNT();
+    count = db.posts()->query()
+            ->setWhere(Post::idField() == postId)
+            ->count();
 
     QTEST_ASSERT(count == 0);
 }

@@ -12,6 +12,7 @@ class MainTest : public QObject
     WeblogDatabase db;
     int postId;
     Post *post;
+    Query<Post> *q;
 public:
     explicit MainTest(QObject *parent = 0);
 
@@ -20,16 +21,8 @@ signals:
 private slots:
     void initTestCase();
 
-    void dataScheema();
-    void createPost();
-    void createPost2();
-    void selectPosts();
-    void selectPostsWithoutTitle();
-    void testDate();
-    void selectWithInvalidRelation();
-    void select10NewstPosts();
-    void modifyPost();
-    void emptyDatabase();
+    void cmd1();
+    void cmd2();
 };
 
 #endif // MAINTEST_H

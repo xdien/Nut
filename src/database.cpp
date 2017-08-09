@@ -392,7 +392,11 @@ DatabaseModel Database::model() const
 QString Database::tableName(QString className)
 {
     Q_D(Database);
-    return model().modelByClass(className)->name();
+    TableModel *m = model().modelByClass(className);
+    if (m)
+        return m->name();
+    else
+        return QString::null;;
 }
 
 void Database::setDatabaseName(QString databaseName)

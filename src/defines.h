@@ -109,7 +109,7 @@ public:                                                                     \
 #define NUT_NOT_NULL(x)                     Q_CLASSINFO(QT_STRINGIFY(__nut_NAME_PERFIX #x " " __nut_NOT_NULL), "1")
 
 #ifndef NUT_NO_KEYWORDS
-#   define FROM(x)          /*QScopedPointer<QueryBase*>*/(x->createQuery())
+#   define FROM(x)          (x->query())
 #   define WHERE(x)         ->setWhere(x)
 #   define JOIN(x)          ->join(#x)
 #   define ORDERBY(x)       ->orderBy(#x, "ASC");
