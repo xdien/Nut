@@ -375,9 +375,13 @@ QString TableModel::toString() const
 
 QString TableModel::primaryKey() const
 {
-    foreach (FieldModel *f, _fields)
-        if(f->isPrimaryKey)
-            return f->name;
+    if(this){
+        foreach (FieldModel *f, _fields)
+            if(f->isPrimaryKey)
+                return f->name;
+    }else{
+        qDebug() <<"Nullllll!!! ex";
+    }
     return QString::null;
 }
 

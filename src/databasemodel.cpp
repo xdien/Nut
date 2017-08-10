@@ -37,11 +37,14 @@ DatabaseModel::DatabaseModel(const DatabaseModel &other) : QList<TableModel*>(ot
 
 TableModel *DatabaseModel::model(QString tableName) const
 {
-    for(int i = 0; i < size(); i++){
+    for(int i = 0; i < size(); ++i){
         TableModel *s = at(i);
+        if(s->name() == tableName){
 
-        if(s->name() == tableName)
             return s;
+            break;
+        }
+
     }
 
     qWarning("Table with name '%s' not found in model",

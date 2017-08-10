@@ -509,6 +509,9 @@ QString SqlGeneratorBase::escapeValue(const QVariant &v)const
     case QVariant::Invalid:
         qFatal("Invalud field value");
         return "<FAIL>";
+    default:
+        return "";
+        break;
     }
     return "";
 }
@@ -662,6 +665,8 @@ QString SqlGeneratorBase::operatorString(const PhraseData::Condition &cond) cons
 
     case PhraseData::Append:
         return ",";
+    default:
+        return QString("<FAIL>");
     }
 
     return QString("<FAIL>");
