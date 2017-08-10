@@ -25,9 +25,11 @@
 
 NUT_BEGIN_NAMESPACE
 
-DatabaseModel::DatabaseModel() : QList<TableModel*>(), _versionMajor(0), _versionMinor(0)
-{
+QMap<QString, DatabaseModel*> DatabaseModel::_models;
 
+DatabaseModel::DatabaseModel(const QString &name) : QList<TableModel*>(), _databaseClassName(name), _versionMajor(0), _versionMinor(0)
+{
+    _models.insert(name, this);
 }
 
 DatabaseModel::DatabaseModel(const DatabaseModel &other) : QList<TableModel*>(other), _versionMajor(0), _versionMinor(0)
@@ -35,7 +37,7 @@ DatabaseModel::DatabaseModel(const DatabaseModel &other) : QList<TableModel*>(ot
 
 }
 
-TableModel *DatabaseModel::model(QString tableName) const
+TableModel *DatabaseModel::tableByName(QString tableName) const
 {
     for(int i = 0; i < size(); i++){
         TableModel *s = at(i);
@@ -49,7 +51,7 @@ TableModel *DatabaseModel::model(QString tableName) const
     return 0;
 }
 
-TableModel *DatabaseModel::modelByClass(QString className) const
+TableModel *DatabaseModel::tableByClassName(QString className) const
 {
     for(int i = 0; i < size(); i++){
         TableModel *s = at(i);
@@ -71,7 +73,7 @@ bool DatabaseModel::operator ==(const DatabaseModel &other) const
 
     for(int i = 0; i < size(); i++){
         TableModel *mine = at(i);
-        TableModel *others = other.model(mine->name());
+        TableModel *others = other.tableByName(mine->name());
 
         if(!others)
             return false;
@@ -98,9 +100,9 @@ QJsonObject DatabaseModel::toJson() const
     return obj;
 }
 
-RelationModel *DatabaseModel::relationByClassNames(QString masterClassName, QString childClassName)
+RelationModel *DatabaseModel::relationByClassNames(const QString &masterClassName, const QString &childClassName)
 {
-    TableModel *childTable = modelByClass(childClassName);
+    TableModel *childTable = tableByClassName(childClassName);
 
     if(!childTable)
         return 0;
@@ -112,9 +114,9 @@ RelationModel *DatabaseModel::relationByClassNames(QString masterClassName, QStr
     return 0;
 }
 
-RelationModel *DatabaseModel::relationByTableNames(QString masterTableName, QString childTableName)
+RelationModel *DatabaseModel::relationByTableNames(const QString &masterTableName, const QString &childTableName)
 {
-    TableModel *childTable = model(childTableName);
+    TableModel *childTable = tableByName(childTableName);
 
     if(!childTable)
         return 0;
@@ -128,7 +130,7 @@ RelationModel *DatabaseModel::relationByTableNames(QString masterTableName, QStr
 
 DatabaseModel DatabaseModel::fromJson(QJsonObject &json)
 {
-    DatabaseModel model;
+    DatabaseModel model(QString::null);
 
 //    model.setVersionMajor(json.value(QT_STRINGIFY(versionMajor)).toInt());
 //    model.setVersionMinor(json.value(QT_STRINGIFY(versionMinor)).toInt());
@@ -163,7 +165,7 @@ void DatabaseModel::setVersionMinor(int versionMinor)
     _versionMinor = versionMinor;
 }
 
-bool DatabaseModel::remove(QString tableName)
+bool DatabaseModel::remove(const QString &tableName)
 {
     for(int i = 0; i < size(); i++){
         TableModel *s = at(i);
@@ -173,6 +175,14 @@ bool DatabaseModel::remove(QString tableName)
         }
     }
     return false;
+}
+
+DatabaseModel *DatabaseModel::modelByName(const QString &name)
+{
+    if (_models.contains(name))
+        return _models[name];
+
+    return Q_NULLPTR;
 }
 
 NUT_END_NAMESPACE

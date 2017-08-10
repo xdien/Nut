@@ -38,7 +38,7 @@
 
 NUT_BEGIN_NAMESPACE
 
-template<class T>
+template <class T>
 class NUT_EXPORT Query : public QueryBase
 {
     QueryPrivate *d_ptr;
@@ -54,12 +54,13 @@ public:
     Query<T> *join(const QString &tableName);
     Query<T> *setWhere(WherePhrase where);
 
-    Query<T> *join(Table *c){
+    Query<T> *join(Table *c)
+    {
         join(c->metaObject()->className());
         return this;
     }
 
-    Query<T> *orderBy(QString fieldName, QString type);
+//    Query<T> *orderBy(QString fieldName, QString type);
     Query<T> *orderBy(WherePhrase phrase);
 
     int count();
@@ -68,7 +69,7 @@ public:
     QVariant average(FieldPhrase<int> &f);
     T *first();
     QList<T *> toList(int count = -1);
-    template<typename F>
+    template <typename F>
     QList<F> select(const FieldPhrase<F> f);
 
     int update(WherePhrase phrase);
@@ -78,23 +79,28 @@ public:
 };
 
 template <typename T>
-inline Query<T> *createQuery(TableSet<T> *tableSet){
-
+inline Query<T> *createQuery(TableSet<T> *tableSet)
+{
 }
 
-template<class T>
-Q_OUTOFLINE_TEMPLATE Query<T>::Query(Database *database, TableSetBase *tableSet, bool autoDelete) : QueryBase(database),
-    d_ptr(new QueryPrivate(this)), m_autoDelete(autoDelete)
+template <class T>
+Q_OUTOFLINE_TEMPLATE Query<T>::Query(Database *database, TableSetBase *tableSet,
+                                     bool autoDelete)
+    : QueryBase(database), d_ptr(new QueryPrivate(this)),
+      m_autoDelete(autoDelete)
 {
     Q_D(Query);
 
     d->database = database;
     d->tableSet = tableSet;
-    d->tableName = //TableModel::findByClassName(T::staticMetaObject.className())->name();
-            d->database->model().modelByClass(T::staticMetaObject.className())->name();
+    d->tableName
+        = // TableModel::findByClassName(T::staticMetaObject.className())->name();
+        d->database->model()
+            .tableByClassName(T::staticMetaObject.className())
+            ->name();
 }
 
-template<class T>
+template <class T>
 Q_OUTOFLINE_TEMPLATE Query<T>::~Query()
 {
     Q_D(Query);
@@ -102,55 +108,63 @@ Q_OUTOFLINE_TEMPLATE Query<T>::~Query()
     delete d;
 }
 
-template<class T>
+template <class T>
 Q_OUTOFLINE_TEMPLATE QList<T *> Query<T>::toList(int count)
 {
     Q_D(Query);
-    QList<T*> result;
+    QList<T *> result;
     d->select = "*";
 
-//    QSqlQuery q = d->database->exec(d->database->sqlGenertor()->selectCommand(d->wheres, d->orders, d->tableName, d->joinClassName));
+    //    QSqlQuery q =
+    //    d->database->exec(d->database->sqlGenertor()->selectCommand(d->wheres,
+    //    d->orders, d->tableName, d->joinClassName));
     d->sql = d->database->sqlGenertor()->selectCommand(
-                SqlGeneratorBase::SelectAll,
-                "",
-                d->wheres,
-                d->orderPhrases,
-                d->tableName,
-                d->joinClassName);
+        SqlGeneratorBase::SelectAll, "", d->wheres, d->orderPhrases,
+        d->tableName, d->joinClassName);
     QSqlQuery q = d->database->exec(d->sql);
 
-//    QString pk = TableModel::findByName(d->tableName)->primaryKey();
-    QString pk = d->database->model().model(d->tableName)->primaryKey();
+    //    QString pk = TableModel::findByName(d->tableName)->primaryKey();
+    QString pk = d->database->model().tableByName(d->tableName)->primaryKey();
     QVariant lastPkValue = QVariant();
     int childTypeId = 0;
     T *lastRow = 0;
     TableSetBase *childTableSet = Q_NULLPTR;
 
-    //FIXME: getting table error
-//    QStringList masterFields = TableModel::findByName(d->tableName)->fieldsNames();
-    QStringList masterFields = d->database->model().model(d->tableName)->fieldsNames();
+    // FIXME: getting table error
+    //    QStringList masterFields =
+    //    TableModel::findByName(d->tableName)->fieldsNames();
+    QStringList masterFields
+        = d->database->model().tableByName(d->tableName)->fieldsNames();
     QStringList childFields;
-    if(!d->joinClassName.isNull()) {
-        TableModel *joinTableModel = TableModel::findByClassName(d->joinClassName);
-        if(joinTableModel){
-//            childFields = d->database->model().modelByClass(d->joinClassName)->fieldsNames();
-            childFields = TableModel::findByClassName(d->joinClassName)->fieldsNames();
+    if (!d->joinClassName.isNull()) {
+        TableModel *joinTableModel
+            = TableModel::findByClassName(d->joinClassName);
+        if (joinTableModel) {
+            //            childFields =
+            //            d->database->model().modelByClass(d->joinClassName)->fieldsNames();
+            childFields
+                = TableModel::findByClassName(d->joinClassName)->fieldsNames();
             QString joinTableName = d->database->tableName(d->joinClassName);
-            childTypeId = d->database->model().model(joinTableName)->typeId();
-//            childTypeId = TableModel::findByName(joinTableName)->typeId();
+            childTypeId = d->database->model().tableByName(joinTableName)->typeId();
+            //            childTypeId =
+            //            TableModel::findByName(joinTableName)->typeId();
         }
     }
 
     while (q.next()) {
-        if(lastPkValue != q.value(pk)){
+        if (lastPkValue != q.value(pk)) {
             T *t = new T();
             foreach (QString field, masterFields)
                 t->setProperty(field.toLatin1().data(), q.value(field));
-//            for (int i = 0; i < t->metaObject()->propertyCount(); i++) {
-//                const QMetaProperty p = t->metaObject()->property(i);
+            //            for (int i = 0; i < t->metaObject()->propertyCount();
+            //            i++) {
+            //                const QMetaProperty p =
+            //                t->metaObject()->property(i);
 
-//                p.write(t, d->database->sqlGenertor()->readValue(p.type(), q.value(p.name())));
-//            }
+            //                p.write(t,
+            //                d->database->sqlGenertor()->readValue(p.type(),
+            //                q.value(p.name())));
+            //            }
 
             t->setTableSet(d->tableSet);
             t->setStatus(Table::FeatchedFromDB);
@@ -160,21 +174,24 @@ Q_OUTOFLINE_TEMPLATE QList<T *> Query<T>::toList(int count)
             result.append(t);
             lastRow = t;
 
-            if(childTypeId){
-                QSet<TableSetBase*> tableSets = t->tableSets;
+            if (childTypeId) {
+                QSet<TableSetBase *> tableSets = t->tableSets;
                 foreach (TableSetBase *ts, tableSets)
-                    if(ts->childClassName() == d->joinClassName)
+                    if (ts->childClassName() == d->joinClassName)
                         childTableSet = ts;
             }
         }
 
-        if(childTypeId){
-            const QMetaObject *childMetaObject = QMetaType::metaObjectForType(childTypeId);
-            Table *childTable = qobject_cast<Table*>(childMetaObject->newInstance());
+        if (childTypeId) {
+            const QMetaObject *childMetaObject
+                = QMetaType::metaObjectForType(childTypeId);
+            Table *childTable
+                = qobject_cast<Table *>(childMetaObject->newInstance());
 
             foreach (QString field, childFields)
-                childTable->setProperty(field.toLatin1().data(), q.value(field));
-//TODO: set database for table
+                childTable->setProperty(field.toLatin1().data(),
+                                        q.value(field));
+            // TODO: set database for table
             childTable->setParent(this);
             childTable->setParentTable(lastRow);
             childTable->setStatus(Table::FeatchedFromDB);
@@ -184,11 +201,11 @@ Q_OUTOFLINE_TEMPLATE QList<T *> Query<T>::toList(int count)
         }
         lastPkValue = q.value(pk);
 
-        if(!--count)
+        if (!--count)
             break;
     }
 
-    if(m_autoDelete)
+    if (m_autoDelete)
         deleteLater();
     return result;
 }
@@ -200,12 +217,8 @@ Q_OUTOFLINE_TEMPLATE QList<F> Query<T>::select(const FieldPhrase<F> f)
     Q_D(Query);
     QList<F> ret;
     d->sql = d->database->sqlGenertor()->selectCommand(
-                    SqlGeneratorBase::SignleField,
-                    f.data()->text,
-                    d->wheres,
-                    d->orderPhrases,
-                    d->tableName,
-                    d->joinClassName);
+        SqlGeneratorBase::SignleField, f.data()->text, d->wheres,
+        d->orderPhrases, d->tableName, d->joinClassName);
     QSqlQuery q = d->database->exec(d->sql);
 
     while (q.next()) {
@@ -213,74 +226,83 @@ Q_OUTOFLINE_TEMPLATE QList<F> Query<T>::select(const FieldPhrase<F> f)
         ret.append(v.value<F>());
     }
 
-    if(m_autoDelete)
+    if (m_autoDelete)
         deleteLater();
     return ret;
 }
 
-template<class T>
+template <class T>
 Q_OUTOFLINE_TEMPLATE T *Query<T>::first()
 {
     QList<T *> list = toList(1);
 
-    if(list.count())
+    if (list.count())
         return list.first();
     else
         return 0;
 }
 
-template<class T>
+template <class T>
 Q_OUTOFLINE_TEMPLATE int Query<T>::count()
 {
     Q_D(Query);
 
     d->select = "COUNT(*)";
-    d->sql = d->database->sqlGenertor()->selectCommand("COUNT(*)", d->wheres, d->orders, d->tableName, d->joinClassName);
+    d->sql = d->database->sqlGenertor()->selectCommand(SqlGeneratorBase::Count,
+        QStringLiteral("*"), d->wheres, d->orderPhrases, d->tableName, d->joinClassName);
     QSqlQuery q = d->database->exec(d->sql);
 
-    if(q.next())
+    if (q.next())
         return q.value(0).toInt();
     return 0;
 }
 
-template<class T>
-Q_OUTOFLINE_TEMPLATE QVariant Query<T>::max(FieldPhrase<int> &f){
+template <class T>
+Q_OUTOFLINE_TEMPLATE QVariant Query<T>::max(FieldPhrase<int> &f)
+{
     Q_D(Query);
 
-    d->sql = d->database->sqlGenertor()->selectCommand("MAX(" + f.data()->text + ")", d->wheres, d->orders, d->tableName, d->joinClassName);
+    d->sql = d->database->sqlGenertor()->selectCommand(
+        SqlGeneratorBase::Max, f.data()->text, d->wheres, d->orderPhrases,
+        d->tableName, d->joinClassName);
     QSqlQuery q = d->database->exec(d->sql);
 
-    if(q.next())
+    if (q.next())
         return q.value(0).toInt();
     return 0;
 }
 
-template<class T>
-Q_OUTOFLINE_TEMPLATE QVariant Query<T>::min(FieldPhrase<int> &f){
+template <class T>
+Q_OUTOFLINE_TEMPLATE QVariant Query<T>::min(FieldPhrase<int> &f)
+{
     Q_D(Query);
 
-    d->sql = d->database->sqlGenertor()->selectCommand("MIN(" + f.data()->text + ")", d->wheres, d->orders, d->tableName, d->joinClassName);
+    d->sql = d->database->sqlGenertor()->selectCommand(
+        SqlGeneratorBase::Min, f.data()->text, d->wheres, d->orderPhrases,
+        d->tableName, d->joinClassName);
     QSqlQuery q = d->database->exec(d->sql);
 
-    if(q.next())
+    if (q.next())
         return q.value(0).toInt();
     return 0;
 }
 
-template<class T>
+template <class T>
 Q_OUTOFLINE_TEMPLATE QVariant Query<T>::average(FieldPhrase<int> &f)
 {
     Q_D(Query);
 
-    d->sql = d->database->sqlGenertor()->selectCommand("AVG(" + f.data()->text + ")", d->wheres, d->orders, d->tableName, d->joinClassName);
+    d->sql = d->database->sqlGenertor()->selectCommand(
+        SqlGeneratorBase::Average, f.data()->text, d->wheres, d->orderPhrases,
+        d->tableName, d->joinClassName);
     QSqlQuery q = d->database->exec(d->sql);
 
-    if(q.next())
+    if (q.next())
         return q.value(0).toInt();
     return 0;
 }
 
-template<class T>
+template <class T>
 Q_OUTOFLINE_TEMPLATE Query<T> *Query<T>::join(const QString &tableName)
 {
     Q_D(Query);
@@ -288,7 +310,7 @@ Q_OUTOFLINE_TEMPLATE Query<T> *Query<T>::join(const QString &tableName)
     return this;
 }
 
-template<class T>
+template <class T>
 Q_OUTOFLINE_TEMPLATE Query<T> *Query<T>::setWhere(WherePhrase where)
 {
     Q_D(Query);
@@ -296,15 +318,16 @@ Q_OUTOFLINE_TEMPLATE Query<T> *Query<T>::setWhere(WherePhrase where)
     return this;
 }
 
-template<class T>
-Q_OUTOFLINE_TEMPLATE Query<T> *Query<T>::orderBy(QString fieldName, QString type)
-{
-    Q_D(Query);
-    d->orders.insert(fieldName, type);
-    return this;
-}
+//template <class T>
+//Q_OUTOFLINE_TEMPLATE Query<T> *Query<T>::orderBy(QString fieldName,
+//                                                 QString type)
+//{
+//    Q_D(Query);
+//    d->orderPhrases.append(fieldName, type);
+//    return this;
+//}
 
-template<class T>
+template <class T>
 Q_OUTOFLINE_TEMPLATE Query<T> *Query<T>::orderBy(WherePhrase phrase)
 {
     Q_D(Query);
@@ -312,15 +335,13 @@ Q_OUTOFLINE_TEMPLATE Query<T> *Query<T>::orderBy(WherePhrase phrase)
     return this;
 }
 
-template<class T>
+template <class T>
 Q_OUTOFLINE_TEMPLATE int Query<T>::update(WherePhrase phrase)
 {
     Q_D(Query);
 
-    d->sql = d->database->sqlGenertor()->updateCommand(
-                phrase,
-                d->wheres,
-                d->tableName);
+    d->sql = d->database->sqlGenertor()->updateCommand(phrase, d->wheres,
+                                                       d->tableName);
     QSqlQuery q = d->database->exec(d->sql);
 
     if (m_autoDelete)
@@ -328,14 +349,12 @@ Q_OUTOFLINE_TEMPLATE int Query<T>::update(WherePhrase phrase)
     return q.numRowsAffected();
 }
 
-template<class T>
+template <class T>
 Q_OUTOFLINE_TEMPLATE int Query<T>::remove()
 {
     Q_D(Query);
 
-    d->sql = d->database->sqlGenertor()->deleteCommand(
-                d->wheres,
-                d->tableName);
+    d->sql = d->database->sqlGenertor()->deleteCommand(d->wheres, d->tableName);
     QSqlQuery q = d->database->exec(d->sql);
 
     if (m_autoDelete)
@@ -343,7 +362,7 @@ Q_OUTOFLINE_TEMPLATE int Query<T>::remove()
     return q.numRowsAffected();
 }
 
-template<class T>
+template <class T>
 Q_OUTOFLINE_TEMPLATE QString Query<T>::sqlCommand() const
 {
     Q_D(const Query);

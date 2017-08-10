@@ -76,19 +76,12 @@ public:
 
     virtual QString deleteRecords(QString tableName, QString where);
 
-    virtual QString selectCommand(AgregateType t, QString agregateArg,
-                                  QList<WherePhrase> &wheres, QList<WherePhrase> &orders,
-                                  QString tableName, QString joinClassName);
-
-    virtual QString selectCommand(QString selectPhrase, QString agregateArg,
-                                  QList<WherePhrase> &wheres, QList<WherePhrase> &orders,
-                                  QString tableName, QString joinClassName);
-
-    virtual QString selectCommand(QList<WherePhrase> &wheres, QHash<QString, QString>  &orders,
-                                  QString tableName, QString joinClassName);
-    virtual QString selectCommand(QString selectPhrase,
-                                  QList<WherePhrase> &wheres, QHash<QString, QString>  &orders,
-                                  QString tableName, QString joinClassName);
+    virtual QString selectCommand(AgregateType t,
+                                  QString agregateArg,
+                                  QList<WherePhrase> &wheres,
+                                  QList<WherePhrase> &orders,
+                                  QString tableName,
+                                  QString joinClassName);
 
     virtual QString deleteCommand(QList<WherePhrase> &wheres, QString tableName);
 
