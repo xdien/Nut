@@ -53,6 +53,7 @@ public:
 
     QSqlQuery exec(QString sql);
 
+    //TODO: make me private and rename me
     void add(TableSetBase *);
     int saveChanges();
     void cleanUp();
@@ -71,6 +72,7 @@ public:
     SqlGeneratorBase *sqlGenertor() const;
 
 protected:
+    //remove minor version
     virtual void databaseUpdated(int oldMajor, int oldMinor, int newMajor,
                                  int newMinor);
 

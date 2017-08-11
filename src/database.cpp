@@ -161,6 +161,7 @@ bool DatabasePrivate::updateDatabase()
 bool DatabasePrivate::getCurrectScheema()
 {
     Q_Q(Database);
+
     if (allTableMaps.contains(q->metaObject()->className())) {
         currentModel = allTableMaps[q->metaObject()->className()];
         return false;
@@ -207,7 +208,7 @@ bool DatabasePrivate::getCurrectScheema()
         int typeId = QMetaType::type(tableProperty.typeName());
 
         if (tables.values().contains(tableProperty.name())
-            && typeId >= QVariant::UserType) {
+            && (unsigned)typeId >= QVariant::UserType) {
             TableModel *sch = new TableModel(typeId, tableProperty.name());
             currentModel.append(sch);
         }
@@ -215,7 +216,7 @@ bool DatabasePrivate::getCurrectScheema()
 
     foreach (TableModel *sch, currentModel)
         foreach (RelationModel *fk, sch->foregionKeys())
-            fk->table = currentModel.modelByClass(fk->className);
+            fk->table = currentModel.tableByClassName(fk->className);
 
     allTableMaps.insert(q->metaObject()->className(), currentModel);
     return true;
@@ -224,12 +225,12 @@ bool DatabasePrivate::getCurrectScheema()
 DatabaseModel DatabasePrivate::getLastScheema()
 {
     Q_Q(Database);
-    //    ChangeLogTable *u = q->_change_logs()->createQuery()->orderBy("id",
-    //    "desc")->first();
-    ChangeLogTable *u
-        = changeLogs->query()->orderBy("id", "desc")->first();
 
-    DatabaseModel ret;
+    ChangeLogTable *u = changeLogs->query()
+            ->orderBy(!ChangeLogTable::idField())
+            ->first();
+
+    DatabaseModel ret(q->metaObject()->className());
 
     if (u) {
         QJsonObject json
@@ -291,7 +292,7 @@ bool DatabasePrivate::storeScheemaInDB()
 void DatabasePrivate::createChangeLogs()
 {
     //    currentModel.model("change_log")
-    QString diff = sqlGenertor->diff(0, currentModel.model("__change_log"));
+    QString diff = sqlGenertor->diff(0, currentModel.tableByName("__change_log"));
 
     db.exec(diff);
 }
@@ -392,7 +393,7 @@ DatabaseModel Database::model() const
 QString Database::tableName(QString className)
 {
     Q_D(Database);
-    TableModel *m = model().modelByClass(className);
+    TableModel *m = model().tableByClassName(className);
     if (m)
         return m->name();
     else
@@ -438,7 +439,7 @@ void Database::setConnectionName(QString connectionName)
 void Database::setDriver(QString driver)
 {
     Q_D(Database);
-    d->driver = driver;
+    d->driver = driver.toUpper();
 }
 
 SqlGeneratorBase *Database::sqlGenertor() const

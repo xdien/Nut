@@ -43,18 +43,19 @@
 #endif
 
 // Database
+//TODO: remove minor version
 #define NUT_DB_VERSION(major, minor) Q_CLASSINFO(QT_STRINGIFY(__nut_NAME_PERFIX __nut_DB_VERSION), QT_STRINGIFY(#major "." #minor))
 
 #define NUT_DECLARE_TABLE(type, name)                                       \
     Q_CLASSINFO(QT_STRINGIFY(__nut_NAME_PERFIX __nut_TABLE " "  #type), #name)                              \
     Q_PROPERTY(type* name READ name)                                        \
-    Q_PROPERTY(__NUT_NAMESPACE_PERFIX TableSet<type> name##s READ name##s)                         \
+    Q_PROPERTY(NUT_WRAP_NAMESPACE(TableSet<type>) name##s READ name##s)                         \
     type* m_##name;                                                         \
-    __NUT_NAMESPACE_PERFIX TableSet<type> *m_##name##s;                                            \
+    NUT_WRAP_NAMESPACE(TableSet<type>) *m_##name##s;                                            \
 public:                                                                     \
     static const type _##name;                                              \
     type* name() const{ return m_##name; }                                  \
-    __NUT_NAMESPACE_PERFIX TableSet<type> *name##s() const { return m_##name##s; }
+    NUT_WRAP_NAMESPACE(TableSet<type>) *name##s() const { return m_##name##s; }
 
 //Table
 #define NUT_DECLARE_FIELD(type, name, read, write)                          \
@@ -62,8 +63,8 @@ public:                                                                     \
     Q_CLASSINFO(QT_STRINGIFY(__nut_NAME_PERFIX #name " " __nut_FIELD), #name)             \
     type m_##name;                                                          \
 public:                                                                     \
-    static __NUT_NAMESPACE_PERFIX FieldPhrase<type> name##Field(){                                       \
-        static __NUT_NAMESPACE_PERFIX FieldPhrase<type> f = __NUT_NAMESPACE_PERFIX FieldPhrase<type>(staticMetaObject.className(), #name);                          \
+    static NUT_WRAP_NAMESPACE(FieldPhrase<type>) name ## Field(){                                       \
+        static NUT_WRAP_NAMESPACE(FieldPhrase<type>) f = NUT_WRAP_NAMESPACE(FieldPhrase<type>)(staticMetaObject.className(), #name);                          \
         return f;                                                           \
     }                                                                       \
     type read() const{                                                      \

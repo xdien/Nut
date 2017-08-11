@@ -22,7 +22,7 @@
 #define DATABASEMODEL_H
 
 #include <QtCore/QList>
-#include"defines.h"
+#include "defines.h"
 
 class QJsonObject;
 
@@ -30,20 +30,25 @@ NUT_BEGIN_NAMESPACE
 
 class TableModel;
 struct RelationModel;
-class DatabaseModel : public QList<TableModel*>
+class DatabaseModel : public QList<TableModel *>
 {
+    QString _databaseClassName;
     int _versionMajor, _versionMinor;
+    static QMap<QString, DatabaseModel *> _models;
+
 public:
-    DatabaseModel();
+    DatabaseModel(const QString &name = QString::null);
     DatabaseModel(const DatabaseModel &other);
 
-    TableModel *model(QString tableName) const;
-    TableModel *modelByClass(QString className) const;
+    TableModel *tableByName(QString tableName) const;
+    TableModel *tableByClassName(QString className) const;
 
-    RelationModel *relationByClassNames(QString masterClassName, QString childClassName);
-    RelationModel *relationByTableNames(QString masterTableName, QString childTableName);
+    RelationModel *relationByClassNames(const QString &masterClassName,
+                                        const QString &childClassName);
+    RelationModel *relationByTableNames(const QString &masterClassName,
+                                        const QString &childClassName);
 
-    bool operator ==(const DatabaseModel &other) const;
+    bool operator==(const DatabaseModel &other) const;
 
     static DatabaseModel fromJson(QJsonObject &json);
     QJsonObject toJson() const;
@@ -54,7 +59,9 @@ public:
     int versionMinor() const;
     void setVersionMinor(int versionMinor);
 
-    bool remove(QString tableName);
+    bool remove(const QString &tableName);
+
+    static DatabaseModel *modelByName(const QString &name);
 };
 
 NUT_END_NAMESPACE
